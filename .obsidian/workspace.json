@@ -1,0 +1,203 @@
+{
+  "main": {
+    "id": "08359061b8b978d4",
+    "type": "split",
+    "children": [
+      {
+        "id": "45825d7988c5dc0e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cfaedd9e9e4d3a97",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "research_papers/alphaqubit_1.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "alphaqubit_1"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "7f86b20e8656c358",
+    "type": "split",
+    "children": [
+      {
+        "id": "2ea414ac2d1fee86",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ead5ded94b8aa3f3",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "ceb87ce7e4ac341c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "c90061e1178583a7",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "ab973292912af027",
+    "type": "split",
+    "children": [
+      {
+        "id": "5772c2a9ed0842fc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "11d0384736e6a4e6",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "e926fb58ddc97e87",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "bb2026f07f2bf70f",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "ce6c22ce4dafa895",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "9cca57886205a566",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "cfaedd9e9e4d3a97",
+  "lastOpenFiles": [
+    "research_papers/surface_code_review.pdf",
+    "CLAUDE.md",
+    "research_papers/alphaqubit_1.pdf",
+    "research_papers",
+    "project_docs_context/decoder_ML.md",
+    "project_docs_context/Unconfirmed 499624.crdownload",
+    "project_docs_context/QED_vs_QEC_nonClifford_tradeoff.md",
+    "project_docs_context/DEM_prior_diagram.pdf",
+    "project_docs_context/Unconfirmed 274926.crdownload",
+    "project_docs_context/DEM_prior.md",
+    "project_docs_context/DEM.md",
+    "project_docs_context",
+    "PROJECT.md",
+    "QEC_ML_Decoder_Project.md"
+  ]
+}
