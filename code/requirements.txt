@@ -2,3 +2,5 @@ numpy
 pymatching
 jupyter
 ipykernel
+stim
+scipy
