@@ -13,6 +13,10 @@ The project is detailed in PROJECT.md (reference this for direction and detailed
 ```
 ├── CLAUDE.md
 ├── PROJECT.md [project context]
+├── code
+│   ├── [team notebooks: data_pipe, mwpm, preprocessing]
+│   └── claude
+│       └── [scripts written by Claude, kept separate from team work]
 ├── project_docs_context
 │   ├── [markdown files, context provided by our PI]
 └── research_papers
