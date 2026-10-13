@@ -17,6 +17,8 @@ The project is detailed in PROJECT.md (reference this for direction and detailed
 │   ├── [team notebooks: data_pipe, mwpm, preprocessing]
 │   └── claude
 │       └── [scripts written by Claude, kept separate from team work]
+├── deliverables
+│   └── [course submissions, e.g. QEC_Project_Schedule.xlsx]
 ├── project_docs_context
 │   ├── [markdown files, context provided by our PI]
 ├── research_log

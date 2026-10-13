@@ -6,6 +6,7 @@ Scripts written by Claude (research assistant), kept separate from team-authored
 - `run_experiments.py`: reproduces the headroom tables. Run it from `code/` with `.venv/bin/python claude/run_experiments.py`. It takes about 3 min and needs ~1 GB of RAM.
 - `kernel_dims.py`: GF(2) kernel dimensions of the true H′, the graph H_G and the decomposition map D (H′ = H_G D). See `research_log/mwpm_gap_derivation.md` §3.
 - `worst_syndrome.py`: breaks down the syndrome where MWPM loses most to optimal: the exact P(s, L), the true vs graph costs of the leading explanations, and the DEM lines feeding each matched edge. See §4.
+- `build_schedule.py`: generates `deliverables/QEC_Project_Schedule.xlsx` (WBS, Milestones, Gantt, Notes) from the task list hard-coded at the top. It needs `openpyxl`. Edit the task list, then run `python build_schedule.py deliverables/QEC_Project_Schedule.xlsx`. The Gantt bars are plain cell fills, so they render in Numbers as well as Excel.
 
 The method: XOR-convolve each DEM error mechanism into the joint distribution P(s, L) over all 2^25 outcomes. The optimal decoder's LER is Σ_s min(P(s,0), P(s,1)).
 
