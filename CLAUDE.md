@@ -19,6 +19,9 @@ The project is detailed in PROJECT.md (reference this for direction and detailed
 │       └── [scripts written by Claude, kept separate from team work]
 ├── project_docs_context
 │   ├── [markdown files, context provided by our PI]
+├── research_log
+│   ├── README.md [index, settled conclusions, open questions — read at session start]
+│   └── [one file per topic: what was derived/measured and how]
 └── research_papers
     └── [various useful research papers we find]
 ```
