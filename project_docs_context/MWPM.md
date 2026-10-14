@@ -145,7 +145,7 @@ A neural decoder takes the detector tensor directly and is trained on the logica
 | **§5** leakage, analog readout, non-Markovian | **strongest case** | Soft I/Q values and leakage flags are extra input channels. Matching has no natural slot for either; the best it manages is a per-measurement likelihood ratio folded into $w_e$. |
 | **§5** wrong or drifting $p_e$ | partially | Replaces a hand-fitted DEM with learned structure, but substitutes a train/test mismatch for a calibration error. Does not remove the problem, relocates it. |
 | **§5** degeneracy, class vs configuration | **fixed in principle** | Trained against the logical label, so the objective *is* $\arg\max_L Z_L(s)$ — ML, not MLE. Whether it reaches that optimum is an empirical question. |
-| **§5** throughput / latency | **made worse** | AlphaQubit was far from 1 µs/round; AQ2-RT reaches it only on Trillium TPUs. This is the one axis where matching is ahead, and the one that matters for a cryogenic tier. |
+| **§5** throughput / latency | **made worse** | AlphaQubit was far from 1 µs/round; AQ2-RT reaches it only on Trillium TPUs. This is the one axis where matching is ahead, and the one that matters for a real-time (FPGA) tier. |
 | **§5.1** non-matchable codes | fixed | Nothing in the architecture cares whether $\lvert D(e)\rvert\ge3$. Colour and BB codes are the same problem to a network. |
 
 The pattern is worth stating plainly: a learned decoder repairs both structural limits of §4 and most of the §5 survey, and degrades exactly one row — throughput.
@@ -156,7 +156,16 @@ The pattern is worth stating plainly: a learned decoder repairs both structural 
 
 The honest baseline set is therefore **correlated matching** and **belief-matching** (§6a, §6b), plus **gap-MWPM** (§5, soft-output row) whenever a calibration or post-selection claim is being made — matching does carry a confidence signal, cheaply, and it must be beaten rather than ignored.
 
-A second caution, from a $d=3$ hardware experiment with both decoders run on identical shots ([Sundaresan, Yoder, Kim et al. 2023](https://doi.org/10.1038/s41467-023-38247-5)): full MLD over matching bought **~7 % in the $Z$ basis and ~1 % in the $X$ basis**, while a change in *deflagging* — preprocessing, not decoding — bought 2.8 % in the $X$ basis on its own, and the comparison ran on leakage-post-selected data at 4.4–4.9 % rejection per round. At small distance with real device noise the decoder is not the bottleneck; the noise model and the leakage handling are. Two consequences: do not stake an accuracy claim on $d=3$, and measure the headroom (§7.6) before committing to the accuracy axis at all.
+A second caution, from a $d=3$ hardware experiment (IBM heavy-hexagon subsystem code) with every decoder run on identical shots ([Sundaresan, Yoder, Kim et al. 2023](https://doi.org/10.1038/s41467-023-38247-5)). Compared like for like — leakage-post-selected $\lvert+\rangle_L$, $r=2$ rounds, total logical error (Methods table "Logical error at $r=2$ rounds"):
+
+| change | logical error |
+|---|---|
+| analytic matching → full MLD | $20.91\%\to20.83\%$ ($-0.08$ pp) |
+| MLD, deflag every round → deflag first round only | $20.83\%\to18.02\%$ ($-2.81$ pp, ≈13 % relative) |
+
+The preprocessing change is about $35\times$ the decoder upgrade. *Deflagging* turns flag-qubit outcomes into virtual Pauli-$Z$ corrections on data qubits before decoding, and drops the flags from the hypergraph. It is a hard decision, so a flag readout or reset error becomes a $Z$ error on a clean data qubit. MLD is exact over the hypergraph it is handed, so it cannot recover what was removed before that hypergraph was built. The deflagging result is in the published version only, not the arXiv preprint. Do not set it against the abstract's fitted per-round figures: matching vs MLD is $\approx0.040$ vs $0.037$ in $Z$ and $0.088$ vs $0.087$ in $X$, i.e. ~7 % and ~1 % *relative per round*, a different unit. All of it ran on leakage-post-selected data at 4.37–4.91 % rejection per round.
+
+At small distance with real device noise, the decoder is not the bottleneck; the noise model, the preprocessing and the leakage handling are. Two consequences: do not make $d=3$ accuracy the headline claim, and measure the headroom (§7.6) before committing to the accuracy axis at all.
 
 ### 7.4 Where to start: an open implementation
 
@@ -170,12 +179,26 @@ The reference to build on, chosen because the architecture is fully specified *a
 **Why the architecture is the right shape for us.** It is a **pre-decoder**, not a replacement decoder: a 3D CNN with a fixed local receptive field ($R=9$ to $R=17$) runs locally and in parallel over the detector tensor, removes most physical errors, and passes the residual syndrome to a conventional global decoder (PyMatching for surface codes, Chromobius for colour codes). That gives three properties matching decoders and monolithic neural decoders both lack:
 
 - **The right baseline is already in the loop.** It is reported as outperforming *correlated* PyMatching up to $d=13$ — the §7.3 baseline, not the weak one.
-- **Local and parallel ⇒ hardware-realisable.** A fixed receptive field is a bounded-fan-in, fixed-cost-per-round computation; this is the structural property that makes a cryogenic or FPGA tier conceivable at all. End-to-end ~1 µs/round at large $d$ on GB300 GPUs, below 1 µs with block-wise multi-GPU parallelism.
+- **Local and parallel ⇒ hardware-realisable.** A fixed receptive field is a bounded-fan-in, fixed-cost-per-round computation; this is the structural property that makes an FPGA tier conceivable at all. End-to-end ~1 µs/round at large $d$ on GB300 GPUs, below 1 µs with block-wise multi-GPU parallelism.
 - **Quantisation is already in the repo.** INT8/FP8 is the named route to a power-feasible implementation and it does not have to be built from scratch.
 
 One further component is directly relevant to `DEM_prior.md`: a separate architecture that **estimates decoding-graph weights from syndrome statistics alone**, with no explicit circuit-level noise model — reported as near uncorrelated PyMatching and in places above correlated PyMatching. That is Path B of `DEM_prior.md` done by a network, and it attacks the §5 "wrong or drifting $p_e$" row without replacing the decoder at all.
 
-**Two companion papers from one group, both with repos, both directly on our axes.** [Yan, Li, Du, *Rethink the role of neural decoders in quantum error correction*, arXiv:2605.12046](https://arxiv.org/abs/2605.12046) (code: <https://github.com/GrahamYan/QEC-neural-decoder-benchmark>) is the one to read **first**: it unifies representative neural decoders into **five architectural paradigms**, benchmarks them to $d=9$ (161 qubits) under explicit accuracy *and* latency constraints, and runs an end-to-end compression pipeline onto **FPGA**. Three findings matter to us — near-term accuracy is driven more by **training-data volume than by architectural complexity**; an appropriate **inductive bias** is what buys accuracy; and **INT4** (not INT8) is required to reach microsecond latency on FPGA. The first finding is a warning about where effort goes; the third is a harder quantisation target than the NVIDIA repo's INT8/FP8 and should be treated as the real number for any cryogenic or FPGA tier.
+**Two companion papers from one group, both with repos, both directly on our axes.** [Yan, Li, Du, *Rethink the role of neural decoders in quantum error correction*, arXiv:2605.12046](https://arxiv.org/abs/2605.12046) (code: <https://github.com/GrahamYan/QEC-neural-decoder-benchmark>) is the one to read **first**: it unifies representative neural decoders into **five architectural paradigms**, benchmarks them to $d=9$ (161 qubits) under explicit accuracy *and* latency constraints, and runs an end-to-end compression pipeline onto **FPGA**. Three findings matter to us — near-term accuracy is driven more by **training-data volume than by architectural complexity**; an appropriate **inductive bias** is what buys accuracy; and **INT4** (not INT8) is required to reach microsecond latency on FPGA. The first finding is a warning about where effort goes; the third is a harder quantisation target than the NVIDIA repo's INT8/FP8 and should be treated as the real number for an FPGA tier.
+
+**What that repo actually ships** (checked 2026-10-14; 6 commits, last in July 2026). It is about 1.8k lines of PyTorch:
+- five model classes: MLP, dilated 3D CNN, TCN, transformer, and GNN/neural-BP;
+- Stim data generation and training loops;
+- Brevitas quantisation-aware and post-training quantisation at W4A4 and W8A8, with L1 pruning and batch-norm folding.
+
+It does **not** ship:
+- FPGA/HLS code or ONNX export;
+- latency measurement;
+- a matching baseline (PyMatching is not even a dependency);
+- pretrained weights;
+- a **licence**. Read it, but do not copy it into our open-source release.
+
+The paper's FPGA half has to be rebuilt. Its experiments are also fixed-block, with `rounds = d` at uniform $p=5\times10^{-3}$, and the CNN takes $r$ as a constructor argument. None of the models streams round by round, so none fits a 25–100-round memory experiment as written.
 
 [Yan, Li, Xiao, Ma, Cao, Pan, Du, *Efficient foundation decoders for fault-tolerant quantum computing*, arXiv:2606.27119](https://arxiv.org/abs/2606.27119) (code: <https://github.com/GrahamYan/ntu-decoder>) is the scaling counterpart: **neural transfer unification (NTU)** aligns decoding tasks across code distances using algebraic structure shared within a code family, so training on small codes amortises into large ones — the direct answer to "syndrome generation and training cost explode with $d$". The NTU-Transformer is reported to beat **correlation-aware matching** on the $[[361,1,19]]$ surface code, to exceed standard matching at $[[625,1,25]]$ through transfer, and to beat **Relay-BP** on the $[[72,12,6]]$ bivariate-bicycle code at low $p$. Note which baselines those are: correlation-aware matching (§6a) and Relay-BP (§5.1), not bare PyMatching — this is the §7.3 standard being met, and it is also the first entry here that engages §5.1's non-matchable codes.
 
@@ -187,17 +210,32 @@ Head-on accuracy competition with AQ2 is not winnable — $7.3\times10^{-11}$ pe
 
 1. **Leakage as a learned input, validated on hardware.** AlphaQubit saw leakage only through a simulated Pauli+ model; the $d=3$ experiment above *post-selected it away* at ~4.5 % per round. A decoder that ingests leakage flags and is tested against real leakage is an open, well-posed problem and the §5 leakage row is where it lands.
 2. **Soft I/Q as a native channel** rather than a likelihood ratio bolted onto $w_e$.
-3. **Smallest model that beats belief-matching, measured in power.** The pre-decoder's local receptive field plus aggressive quantisation is the concrete handle. Note that arXiv:2605.12046 has already taken the room-temperature FPGA version of this question to $d=9$ with INT4, so the open part is no longer "can a small neural decoder hit microsecond latency on reconfigurable hardware" — it is **the power envelope**: what survives a 70 K budget rather than a room-temperature FPGA's, and what the 4 K/70 K/RT partition does to the answer. Treat that paper as the baseline to extend, not a gap to fill.
+3. **Streaming decoding over long runs, under an FPGA latency budget.** arXiv:2605.12046 benchmarks fixed-block decoding with $r=d$. It does not cover a decoder that:
+   - updates its state (the Pauli frame) round by round over 25–100+ rounds;
+   - beats MWPM on fitted per-round error $\varepsilon$;
+   - still fits a per-round latency budget after INT4/INT8 quantisation.
 
-The evaluation metric for all three is a **Pareto point on (logical error per cycle, latency per cycle, power)**, never accuracy alone.
+   At $d=3$, neither axis alone is a claim. A lookup-table or union-find decoder already runs in nanoseconds on an FPGA. The simulated accuracy ceiling over MWPM is 16–21 % (`research_log/mwpm_headroom.md`). The claim is the combination. Treat that paper as the baseline to extend.
+
+The evaluation metric for all three is a **Pareto point on (logical error per round $\varepsilon$, latency per round, FPGA resources)**, never accuracy alone. Fit $\varepsilon$ from $\mathrm{LER}(r)=\tfrac12\big(1-(1-2\varepsilon)^r\big)$ across several $r$. Per-shot LER at a single long $r$ saturates towards ½ for every decoder, including the optimal one.
 
 ### 7.6 Concrete first steps
 
 Build the measurement apparatus before training anything; it is also what tells you whether the accuracy axis is worth pursuing.
 
-1. **Baseline harness.** Stim → PyMatching, correlated matching, belief-matching, gap-MWPM on identical shots, $d=3,5,7$, SI1000. Reproduce §6's $1.15\times$ threshold and $7.8\times$ LER figures. If the baselines do not reproduce, nothing downstream is measurable. Start from `GrahamYan/QEC-neural-decoder-benchmark` rather than building this from scratch — it already carries the five-paradigm comparison and the latency instrumentation, and adapting someone else's harness surfaces your own assumptions faster than writing one.
-2. **Headroom measurement.** Run Tesseract (§5.1) or small-$d$ exact MLD on the same shots. The spread between belief-matching and MLD *is* the maximum available accuracy gain. If it is single-digit percent at affordable distance, the accuracy axis is the wrong target and §7.5's power/latency framing is the project — better learned in week two than month six.
-3. **Reproduce a released decoder.** Run `NVIDIA/Ising-Decoding` inference against the harness and confirm the correlated-PyMatching comparison on your own Stim data before touching any architecture. Then re-run the arXiv:2605.12046 INT4 FPGA result as the latency/power reference point — that number, not AQ2's TPU throughput, is what a cryogenic tier has to be argued against.
+1. **Baseline harness.**
+   - Run Stim → PyMatching, correlated matching, belief-matching and gap-MWPM on identical shots: $d=3,5,7$, SI1000, $r=3,25,100$.
+   - Report the fitted $\varepsilon$ per round (§7.5).
+   - Reproduce §6's $1.15\times$ threshold and $7.8\times$ LER figures. If the baselines do not reproduce, nothing downstream is measurable.
+   - Build this ourselves. `GrahamYan/QEC-neural-decoder-benchmark` has no matching baseline and no latency instrumentation (§7.4); its models and Brevitas code are a reference for the neural side, not a harness.
+2. **Headroom measurement.**
+   - Run Tesseract (§5.1) or small-$d$ exact MLD on the same shots. Exact MLD is feasible only at $d=3$, $r\le3$ (`research_log/mwpm_headroom.md`); at $r=25$, use Tesseract as a near-optimal proxy.
+   - The spread between belief-matching and MLD *is* the maximum available accuracy gain.
+   - If it is single-digit percent at affordable distance, the accuracy axis is the wrong headline. §7.5 point 3's latency framing then becomes the project, with accuracy reduced to "does not lose to correlated matching". Better learned in week two than month six.
+3. **Reproduce a released decoder.**
+   - Run `NVIDIA/Ising-Decoding` inference against the harness, and confirm the correlated-PyMatching comparison on your own Stim data before touching any architecture.
+   - Then rebuild the arXiv:2605.12046 INT4 FPGA result as the latency reference point. The repo stops at Brevitas quantisation, so the export path has to be built: Brevitas → QONNX → FINN, or hls4ml.
+   - That number, not AQ2's TPU throughput, is what our FPGA tier has to be argued against.
 4. **Then** the ladder in `decoder_ML.md` §3.4, with its step-1 baseline upgraded from PyMatching to belief-matching.
 
 
@@ -226,6 +264,6 @@ Build the measurement apparatus before training anything; it is also what tells 
 - C. Chamberland, J. Olle, M. Li, S. Thornton, I. Baratta, *Fast and accurate AI-based pre-decoders for surface codes*, [arXiv:2604.12841](https://arxiv.org/abs/2604.12841) (2026) — open source: <https://github.com/NVIDIA/Ising-Decoding> (Apache-2.0). **The §7.4 starting point.**
 - N. Sundaresan, T. J. Yoder, Y. Kim, M. Li, E. H. Chen, G. Harper, T. Thorbeck, A. W. Cross, A. D. Corcoles, M. Takita, *Demonstrating multi-round subsystem quantum error correction using matching and maximum likelihood decoders*, Nature Communications 14, 2852 (2023), [doi:10.1038/s41467-023-38247-5](https://doi.org/10.1038/s41467-023-38247-5) — the d=3 matching-vs-MLD comparison on identical shots quoted in §7.3.
 - J. Bausch et al., *Learning high-accuracy error decoding for quantum processors* (AlphaQubit), Nature 635, 834 (2024); A. Senior, M. Edlich, N. Heras et al., *A scalable and real-time neural decoder for topological quantum codes* (AlphaQubit 2), [arXiv:2512.07737](https://arxiv.org/abs/2512.07737) (2026). No code or weights released; see `decoder_ML.md` §2.
-- G. Yan, S. Li, Y. Du, *Rethink the role of neural decoders in quantum error correction*, [arXiv:2605.12046](https://arxiv.org/abs/2605.12046) (2026) — code: <https://github.com/GrahamYan/QEC-neural-decoder-benchmark>. Five architectural paradigms benchmarked to d=9 under joint accuracy/latency constraints, with an FPGA compression pipeline; data volume beats architectural complexity, inductive bias is decisive, INT4 is required for microsecond latency. **Read first (§7.4).**
+- G. Yan, S. Li, Y. Du, *Rethink the role of neural decoders in quantum error correction*, [arXiv:2605.12046](https://arxiv.org/abs/2605.12046) (2026) — code: <https://github.com/GrahamYan/QEC-neural-decoder-benchmark>. Five architectural paradigms benchmarked to d=9 under joint accuracy/latency constraints, with an FPGA compression pipeline; data volume beats architectural complexity, inductive bias is decisive, INT4 is required for microsecond latency. **Read first (§7.4).** The repo ships models and Brevitas quantisation only: no FPGA code, latency harness, matching baseline or licence (§7.4).
 - G. Yan, S. Li, S. Xiao, P. Ma, H. Cao, F. Pan, Y. Du, *Efficient foundation decoders for fault-tolerant quantum computing*, [arXiv:2606.27119](https://arxiv.org/abs/2606.27119) (2026) — code: <https://github.com/GrahamYan/ntu-decoder>. Neural transfer unification amortises training across code distances; NTU-Transformer beats correlation-aware matching at [[361,1,19]], standard matching at [[625,1,25]] via transfer, and Relay-BP at [[72,12,6]].
 - M. Lange, P. Havstrom, B. Srivastava, I. Bengtsson, V. Bergentall, K. Hammar, O. Heuts, E. van Nieuwenburg, M. Granath, *Data-driven decoding of quantum error correcting codes using graph neural networks*, Phys. Rev. Research 7, 023181 (2025), [arXiv:2307.01241](https://arxiv.org/abs/2307.01241).
