@@ -32,4 +32,4 @@ The project is detailed in PROJECT.md (reference this for direction and detailed
 - Don't respond to complex technical questions with answers from training data when you could instead reference context
 - Give precise mathematical answers referencing project docs or research papers when appropriate
 - **important**: Use `grep` tool to search documentation so you don't flood your context with verbose papers or docs
-- 
+- don't force connections onto, guide with pointers instead of explicitly stating things that turn into excessively verbose responses
