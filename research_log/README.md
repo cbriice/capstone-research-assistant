@@ -6,7 +6,7 @@ What has been learned and settled across sessions, so each session can pick up w
 
 | entry | topic | dates |
 |---|---|---|
-| [mwpm_headroom.md](mwpm_headroom.md) | How far MWPM is from the optimal decoder at d=3 (exact numbers), why the old baseline was a coin flip, and how to frame "beat MWPM" | 2026-10-08 |
+| [mwpm_headroom.md](mwpm_headroom.md) | How far MWPM is from the optimal decoder at d=3 (exact numbers), why the old baseline was a coin flip, the per-round ε baseline over 3–100 rounds, and how to frame "beat MWPM" | 2026-10-08 → 2026-10-14 |
 | [mwpm_gap_derivation.md](mwpm_gap_derivation.md) | How PyMatching builds its graph, what decomposing hyperedges throws away, and an algebraic proof of why MWPM picks the wrong class | 2026-10-08 → 2026-10-13 |
 
 ## Settled conclusions
@@ -21,7 +21,11 @@ What has been learned and settled across sessions, so each session can pick up w
    - MWPM optimizes over the right set of corrections but with the wrong probability on it.
    - It uses the product of the edge marginals instead of their joint distribution, and it takes the max instead of summing.
    - In the code-capacity model the result is that MWPM's prediction depends on s_x alone, while the optimal one uses s_z through Y errors.
-4. **Real data is where ML decoders show large wins** (on Sycamore: PyMatching 4.0% vs AlphaQubit 2.9%).
+4. **Compare decoders on ε per round, not on per-shot LER.**
+   - Scope: d=3, 20–30 rounds base, 100+ realistic.
+   - MWPM's fitted ε is flat from r=3 to r=100. At p=1e-3 it is 2.40e-4.
+   - The per-shot LER tends to ½ for every decoder, so a coin flip at long r says nothing about MWPM.
+5. **Real data is where ML decoders show large wins** (on Sycamore: PyMatching 4.0% vs AlphaQubit 2.9%).
    - Effects like leakage are correlations over time that no DEM and no matching can represent.
 
 ## Open questions and next steps
@@ -34,6 +38,10 @@ What has been learned and settled across sessions, so each session can pick up w
 - [ ] Decide whether to give the model input features that carry the s_z → s_x coupling, e.g. a co-located X/Z detector pairing, or whether to let it learn that.
 - [ ] Sycamore data exploration (Zenodo 6804040): pretrain on SI1000 or a DEM fitted with p_ij, then finetune.
 - [ ] Add correlated matching (two-pass reweighting) as a stronger baseline.
+- [ ] Measure the MWPM-to-optimal ε headroom at r=25–100. Exact MLD stops at r≤3, so use Tesseract as a near-optimal proxy.
+- [ ] Ask Dr. Kim:
+  - which FPGA board we can use (decides INT4 vs INT8, and FINN vs hls4ml);
+  - whether latency means per-round streaming cost or reaction time after the last round.
 
 ## Conventions
 

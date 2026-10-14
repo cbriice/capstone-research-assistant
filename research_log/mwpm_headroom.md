@@ -13,6 +13,28 @@ The 1.78% figure is from `code/data_pipe.ipynb`:
 - the four channels are after_clifford, before_round_data, before_measure and after_reset;
 - test LER 1.784% ± 0.059%.
 
+## Per-round ε baseline over long runs (2026-10-14)
+
+**Scope.** Decided with Dr. Kim: d=3, base experiments of 20–30 rounds, and a realistic target of 100+ rounds. At those lengths the per-shot LER tends to ½ for every decoder, so decoders are compared on ε.
+
+**Method.** The code is the last five cells of `code/mwpm.ipynb`.
+- Fit ln(1 − 2·LER) = ln A + r·ln(1 − 2ε) by weighted least squares over r ∈ {3, 5, 10, 25, 50, 100}, with binomial weights.
+- A absorbs the state-preparation and readout boundaries.
+- Setup: d=3 rotated memory-Z, uniform p on all four channels, PyMatching.
+- Sampling: 1000 logical failures or 2M shots per point, whichever comes first.
+
+| p | ε per round (MWPM) | A | LER at r=25 | LER at r=100 |
+|---|---|---|---|---|
+| 1e-3 | 2.40e-4 ± 0.04e-4 | 1.000 | 0.62% | 2.3% |
+| 2e-3 | 9.26e-4 ± 0.08e-4 | 1.000 | 2.3% | 8.5% |
+| 3e-3 | 2.02e-3 ± 0.01e-3 | 0.999 | 4.8% | 16.7% |
+| 5e-3 | 5.34e-3 ± 0.03e-3 | 0.997 | 12.0% | 32.8% |
+
+- **ε is flat in r.** The single-r estimate ½(1 − (1 − 2·LER)^(1/r)) matches the fit from r ≈ 10 on. At p=5e-3, r=3 reads about 8% high because of the boundary rounds. MWPM does not degrade on longer runs. The rise in per-shot LER is compounding that every decoder suffers.
+- **ε ∝ p², as expected at d=3,** since (d+1)/2 = 2.
+- **Cross-check:** at p=5e-3, r=3 the LER is 1.71%, against the exact 1.718% below.
+- **Win condition:** a lower fitted ε at the same (d, p), with non-overlapping error bars, evaluated on the same r list using the same `fit_epsilon`.
+
 ## Exact optimal decoder (no sampling)
 
 Code: `code/claude/exact_decoding.py`. Reproduce the tables with `code/claude/run_experiments.py`.
