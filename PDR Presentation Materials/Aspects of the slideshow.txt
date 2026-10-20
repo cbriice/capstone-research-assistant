@@ -1,0 +1,96 @@
+Aspects of the slideshow
+
+- Team introduction
+- Project overview, "high-level", motivation, etc. Gantt chart, work-breakdown structure, etc.
+- introduction to quantum error correction and surface code structure
+- Discussion minimum weight perfect matching, with strengths and weaknesses supported by graphical and mathematical evidence
+- Discussion of why we treat syndromes as a classical inference problem
+- Stim circuit data simulation, what it can and can't model, output format, storing output vs seeding 
+- Preprocessing pipeline, motivation of why we need preprocessing vs using straight syndrome data, data shape and features based on model
+- Early thoughts on model selection (recurrent, transformer, CNN, feed-forward, GNN), how each model learns compared to the syndrome data being put in. For example, if GNN would work well because of the graph like shape of  surface code and syndrome data, whether or not a recurrent neural network should be used based on the across time aspect of rounds in a shot. 
+
+Any content that is too technical for the main presentation should be put into the back batch slides so if a question arises regarding it we have a slide explaining it. 
+
+Max time presenting slides is 20 minutes with 10 for Q&A, but teacher recommended ~10 minutes, 5 for introduction and high level project overview, 5 for more technical in depth aspects, then the remaining ~20 minutes can be used to answer questions regarding the more technical aspects.
+
+Make sure to cite any sources used in reference slides and in-text if necessary, following proper IEEE format.
+
+Follow Assert-Evidence schema discussed in slide deck provided.
+
+PDR Slide Deck description 
+
+Objective:
+The goal of this assignment is to prepare a comprehensive and professional slide deck for your Preliminary Design Review (PDR) presentation. This presentation will demonstrate your project’s progress, your understanding of the problem, and your design approach to date. Review both the rubric and the guidelines stated in the assignment prompt.
+
+Instructions:
+
+Teams MUST submit their slide deck to Carmen and to their sponsor the night before their presentation to receive full credit. 
+
+Presentation Content:
+
+Title Slide: Include the project title, team name, and members' names. Add the date of the presentation.
+Project Overview: Provide a brief introduction to the project, including the problem statement, objectives, and the significance of the project.
+Problem Identification: Summarize the problem you are addressing. Include the background, scope, and any key insights gained from your problem identification process.
+Needs Assessment: Present the identified needs of the stakeholders. Highlight the major needs and how you’ve prioritized them.
+Requirements Definition: Outline the key functional and non-functional requirements of your project. Include any constraints and assumptions. These usually appear in the form of a table that maps needs to the project requirements.
+Design Approach: Describe your design approach and methodology. Include initial design concepts, sketches, or diagrams as applicable. Presenting a block diagram of the overall system can help the audience understand your design approach better. 
+Progress to Date: Show the current status of your project. Include completed tasks, milestones achieved, and any prototypes or models developed.
+Challenges and Risks: Discuss any challenges or risks you have encountered and how you plan to address them.
+Next Steps: Outline the upcoming tasks and milestones. Include a timeline or Gantt chart to show the planned progress.
+Questions and Feedback: Prepare to address questions from the reviewers. Include a slide inviting feedback and questions from the audience.
+Slide Deck Requirements:
+
+Professional Design: Ensure your slide deck is visually appealing and professionally designed. Use consistent fonts, colors, and layouts. Avoid clutter and ensure that each slide is focused on a single topic or idea.
+Clarity and Brevity: Each slide should be clear and to the point. Use bullet points, diagrams, and visuals to convey information effectively. Avoid excessive text and focus on key points.
+Visual Aids: Use charts, graphs, diagrams, and images to support your presentation. Ensure that all visual aids are labeled clearly and relevant to the content.
+Rehearsal: Practice your presentation to ensure smooth delivery. Be prepared to discuss each slide in detail and answer questions from the audience.
+Submission Requirements:
+
+Deliverable: Submit the final slide deck through Carmen. Ensure that all team members’ names are included on the title slide.
+Format: The slide deck should be formatted professionally, with a clear and logical flow of information. Use high-quality images and ensure that all text is readable.
+Evaluation Criteria:
+
+Review the Rubric attached to this assignment while considering the following:
+
+Content Quality: Accuracy and completeness of the information presented.
+
+Presentation Skills: Clarity of communication, engagement with the audience, and ability to answer questions effectively.
+Design and Organization: Visual appeal, clarity, and logical flow of the slide deck.
+Adherence to Guidelines: Following the specified structure and requirements.
+Purpose of this Exercise:
+
+This assignment will help you develop and refine your presentation skills, which are crucial for effectively communicating your project progress and plans. The PDR presentation is an opportunity to showcase your work, receive valuable feedback, and demonstrate your readiness for the next stages of your project.
+
+Additional Resources:
+
+Presentation Tips: Effective Presentation Tips
+Slide Design Guidelines: Slide Design Best Practices
+
+Oral Presentation description:
+
+Objective:
+The Preliminary Design Review (PDR) is a critical milestone in your project where you will present the maturity of your concept design and demonstrate that it is on track to meet the project’s performance requirements, cost constraints, and schedule. This review will help determine if you are ready to proceed to the Detailed Design phase.
+
+Presentation Requirements:
+
+Preparation:
+
+Arrival: Arrive at least 10 minutes before your scheduled time to set up and test your presentation equipment.
+Device Connection: You will connect your device to the podium using an HDMI cable. Ensure you bring any necessary adapters or converters.
+Virtual Participation: If your sponsors are attending virtually, connect to my Zoom office. Details for the Zoom link will be provided separately.
+Presentation Duration and Format:
+
+Total Time: Each team will have a total of 30 minutes for their presentation, including 20 minutes for the presentation. You will have 10 additional minutes for questions and feedback.
+Time Management: Your presentation will be strictly timed. You will be cut off at the 20-minute mark, so practice to ensure you can complete your presentation within this timeframe.
+Format: Use Microsoft PowerPoint for your slides. Ensure your presentation is clear, visually engaging, and professionally formatted.
+Best Practices for a Successful Presentation:
+
+Rehearse: Practice your presentation multiple times to ensure smooth delivery and adherence to the time limit.
+Engage: Communicate clearly and confidently. Make eye contact with your audience and engage them with your content.
+Visual Aids: Ensure your slides are well-designed, with clear and concise text, and effective use of visuals. Avoid clutter and focus on key points.
+Q&A Preparation: Anticipate potential questions and prepare thoughtful responses.
+Review the Rubric for evaluation criteria.
+
+All team members must be present and participate in the PDR presentation.
+The dress code is business casual attire. 
+
