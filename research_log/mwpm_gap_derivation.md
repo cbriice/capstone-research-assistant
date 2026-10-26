@@ -163,3 +163,28 @@ Reproduce with `code/claude/worst_syndrome.py`. The true costs use the decompose
 
 - **Inside a DEM:** the only thing the model can learn that MWPM can't is the conditional structure R. That means co-located X and Z detection events, and hyperedge patterns spanning two rounds. At d=3 this is worth 16–21%.
 - **On real data:** effects like leakage cause bursts of detection events over many rounds, until the qubit is reset. This needs memory across rounds, through recurrence or temporal graph edges. AlphaQubit keeps its lead up to d=11 on Pauli+ noise (`decoder_ML.md:88`) and takes leakage flags as input (`decoder_ML.md:159`).
+
+## 7. The split over all syndromes (2026-10-20)
+
+Code: the last cell of `code/mwpm.ipynb`. Four exact decoders sit on a (model × rule) grid: graph or true DEM, max or sum. All are scored on the true P(s, L) at d=3, r=3.
+- The max rule uses the same XOR fold with `max` in place of `+` (max-product), so it is exact.
+- graph-max reproduces PyMatching on every syndrome (mismatch mass 0).
+- The shares below are the Shapley average of the two orderings. The ordering moves them by at most ±2 points.
+
+| p | MWPM ÷ opt | true-max ÷ opt | graph-sum ÷ opt | correlation | degeneracy |
+|---|---|---|---|---|---|
+| 1e-3 | 1.262 | 1.013 | 1.253 | 96% | 4% |
+| 2e-3 | 1.241 | 1.014 | 1.231 | 95% | 5% |
+| 3e-3 | 1.222 | 1.016 | 1.211 | 94% | 6% |
+| 5e-3 | 1.189 | 1.019 | 1.178 | 92% | 8% |
+
+- **Fixing correlations alone closes 90–95% of the gap.** A most-likely-error decoder on the hypergraph is within 1.3–1.9% of optimal.
+- **Summing over the class on MWPM's own graph barely helps** (1.262 → 1.253 at p=1e-3).
+- **Per syndrome** (weighted by |P(s,0) − P(s,1)|, where MWPM differs from optimal):
+  - fixed by correlation alone: 84–89%;
+  - fixed by either fix: 10–13%;
+  - fixed by degeneracy alone: ≤1%;
+  - fixed only by both together: 1–3%.
+- **The degeneracy share grows with p** (more near-tied classes). It is still small at p=5e-3.
+- **This differs from §4's worst syndrome** (1.24 vs 0.40 in log-likelihood units). §4 measures the log-odds shift on one syndrome; this measures LER summed over all of them.
+- **For the ML decoder:** the target is the hyperedge/conditional structure (R in §5). Path multiplicity is not. Boundary-vs-bulk path counting falls under degeneracy, so it is a ≤8% effect at d=3.

@@ -7,7 +7,7 @@ What has been learned and settled across sessions, so each session can pick up w
 | entry | topic | dates |
 |---|---|---|
 | [mwpm_headroom.md](mwpm_headroom.md) | How far MWPM is from the optimal decoder at d=3 (exact numbers), why the old baseline was a coin flip, the per-round ε baseline over 3–100 rounds, and how to frame "beat MWPM" | 2026-10-08 → 2026-10-14 |
-| [mwpm_gap_derivation.md](mwpm_gap_derivation.md) | How PyMatching builds its graph, what decomposing hyperedges throws away, and an algebraic proof of why MWPM picks the wrong class | 2026-10-08 → 2026-10-13 |
+| [mwpm_gap_derivation.md](mwpm_gap_derivation.md) | How PyMatching builds its graph, what decomposing hyperedges throws away, and an algebraic proof of why MWPM picks the wrong class | 2026-10-08 → 2026-10-20 |
 
 ## Settled conclusions
 
@@ -21,6 +21,7 @@ What has been learned and settled across sessions, so each session can pick up w
    - MWPM optimizes over the right set of corrections but with the wrong probability on it.
    - It uses the product of the edge marginals instead of their joint distribution, and it takes the max instead of summing.
    - In the code-capacity model the result is that MWPM's prediction depends on s_x alone, while the optimal one uses s_z through Y errors.
+   - Summed over all syndromes at r=3, 92–96% of the gap is correlation and 4–8% is degeneracy. A hypergraph most-likely-error decoder is within 2% of optimal.
 4. **Compare decoders on ε per round, not on per-shot LER.**
    - Scope: d=3, 20–30 rounds base, 100+ realistic.
    - MWPM's fitted ε is flat from r=3 to r=100. At p=1e-3 it is 2.40e-4.
@@ -34,7 +35,7 @@ What has been learned and settled across sessions, so each session can pick up w
   - relative LER at fixed (d, p, r), with error bars;
   - plus the fraction of the MWPM-to-optimal gap closed at d=3;
   - plus Sycamore data as a stretch goal.
-- [ ] Measure how much of the d=3 gap is the correlation term and how much is degeneracy, summed over all syndromes. So far this has only been done for the single worst syndrome.
+- [x] Split the d=3 gap over all syndromes (2026-10-20): 92–96% correlation, 4–8% degeneracy. See `mwpm_gap_derivation.md` §7.
 - [ ] Decide whether to give the model input features that carry the s_z → s_x coupling, e.g. a co-located X/Z detector pairing, or whether to let it learn that.
 - [ ] Sycamore data exploration (Zenodo 6804040): pretrain on SI1000 or a DEM fitted with p_ij, then finetune.
 - [ ] Add correlated matching (two-pass reweighting) as a stronger baseline.
