@@ -7,6 +7,7 @@ What has been learned and settled across sessions, so each session can pick up w
 | entry | topic | dates |
 |---|---|---|
 | [mwpm_headroom.md](mwpm_headroom.md) | How far MWPM is from the optimal decoder at d=3 (exact numbers), why the old baseline was a coin flip, the per-round ε baseline over 3–100 rounds, and how to frame "beat MWPM" | 2026-10-08 → 2026-10-14 |
+| [decoder_complexity.md](decoder_complexity.md) | Why matching needs graphlike edges (P vs NP-complete/#P-hard), BP's cost and failure mode, p → weights in general (static vs dynamic, ML decoders), MWPM runtime typical vs worst case, boundary vs bulk | 2026-10-20 → 2026-10-26 |
 | [mwpm_gap_derivation.md](mwpm_gap_derivation.md) | How PyMatching builds its graph, what decomposing hyperedges throws away, and an algebraic proof of why MWPM picks the wrong class | 2026-10-08 → 2026-10-20 |
 
 ## Settled conclusions
@@ -26,7 +27,11 @@ What has been learned and settled across sessions, so each session can pick up w
    - Scope: d=3, 20–30 rounds base, 100+ realistic.
    - MWPM's fitted ε is flat from r=3 to r=100. At p=1e-3 it is 2.40e-4.
    - The per-shot LER tends to ½ for every decoder, so a coin flip at long r says nothing about MWPM.
-5. **Real data is where ML decoders show large wins** (on Sycamore: PyMatching 4.0% vs AlphaQubit 2.9%).
+5. **Graphlike is the line between tractable and NP-complete.**
+   - Min-weight decoding with column weight ≤ 2 reduces to perfect matching, which is in P. With weight-3 columns it is NP-complete (3DM), and exact ML is #P-hard.
+   - BP is cheap but inexact on the surface code: its loops and degeneracy are the problem.
+   - MWPM's runtime is near-linear in defects on random noise and O(k³) on adversarial syndromes. Real-time budgets care about the tail.
+6. **Real data is where ML decoders show large wins** (on Sycamore: PyMatching 4.0% vs AlphaQubit 2.9%).
    - Effects like leakage are correlations over time that no DEM and no matching can represent.
 
 ## Open questions and next steps
