@@ -44,7 +44,7 @@ What has been learned and settled across sessions, so each session can pick up w
 - [ ] Decide whether to give the model input features that carry the s_z → s_x coupling, e.g. a co-located X/Z detector pairing, or whether to let it learn that.
 - [ ] Sycamore data exploration (Zenodo 6804040): pretrain on SI1000 or a DEM fitted with p_ij, then finetune.
 - [ ] Add correlated matching (two-pass reweighting) as a stronger baseline.
-- [ ] Measure the MWPM-to-optimal ε headroom at r=25–100. Exact MLD stops at r≤3, so use Tesseract as a near-optimal proxy.
+- [ ] Measure the MWPM-to-optimal ε headroom at r=25–100. The joint table stops at r≤3, but exact per-shot ML is cheap at d=3 for any r (`code/claude/exact_sweep.py`, `decoder_complexity.md` §4). Tesseract is only needed for d≥5.
 - [ ] Ask Dr. Kim:
   - which FPGA board we can use (decides INT4 vs INT8, and FINN vs hls4ml);
   - whether latency means per-round streaming cost or reaction time after the last round.
