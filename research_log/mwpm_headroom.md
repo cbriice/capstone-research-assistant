@@ -34,6 +34,10 @@ The 1.78% figure is from `code/data_pipe.ipynb`:
 - **ε ∝ p², as expected at d=3,** since (d+1)/2 = 2.
 - **Cross-check:** at p=5e-3, r=3 the LER is 1.71%, against the exact 1.718% below.
 - **Win condition:** a lower fitted ε at the same (d, p), with non-overlapping error bars, evaluated on the same r list using the same `fit_epsilon`.
+- **Literature check (2026-10-28).** Our pipeline reproduces PyMatching under this exact noise model (rotated_memory_z, uniform p on the 4 channels). Reference: [Stim getting_started §9](https://github.com/quantumlib/Stim/blob/main/doc/getting_started.ipynb), r = 3d, per-round ε via ½(1 − (1 − 2·LER)^(1/r)). Code: `code/claude/repro_stim_tutorial.py`.
+  - Threshold: d=3/5/7 curves cross between p = 1.0% and 1.1%; the tutorial says "roughly 1%". Our d=3 values 1.30e-2, 1.59e-2, 1.96e-2, 2.33e-2, 2.68e-2 at p = 0.8–1.2% match its plot.
+  - p=1e-3: d=5 ε = 2.67e-5, against 2.59e-5 from the tutorial's fit. d=3 ε = 2.37e-4, which agrees with our 2.40e-4. The tutorial's fit line reads 2.79e-4 at d=3, but that line is fitted over d=3–9 with 100 errors each, so the d=3 end isn't a direct measurement.
+  - PyMatching's own docs quote ~0.7%. That figure is per-shot LER with rounds = d on memory_x, a different unit, so it isn't a contradiction.
 
 ## Exact optimal decoder (no sampling)
 

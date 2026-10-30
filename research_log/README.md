@@ -6,8 +6,9 @@ What has been learned and settled across sessions, so each session can pick up w
 
 | entry | topic | dates |
 |---|---|---|
-| [mwpm_headroom.md](mwpm_headroom.md) | How far MWPM is from the optimal decoder at d=3 (exact numbers), why the old baseline was a coin flip, the per-round ε baseline over 3–100 rounds, and how to frame "beat MWPM" | 2026-10-08 → 2026-10-14 |
+| [mwpm_headroom.md](mwpm_headroom.md) | How far MWPM is from the optimal decoder at d=3 (exact numbers), why the old baseline was a coin flip, the per-round ε baseline over 3–100 rounds, and how to frame "beat MWPM" | 2026-10-08 → 2026-10-28 |
 | [decoder_complexity.md](decoder_complexity.md) | Why matching needs graphlike edges (P vs NP-complete/#P-hard), BP's cost and failure mode, p → weights in general (static vs dynamic, ML decoders), MWPM runtime typical vs worst case, boundary vs bulk | 2026-10-20 → 2026-10-26 |
+| [cryo_hardware_constraints.md](cryo_hardware_constraints.md) | How a ≤4 K FPGA/cryo placement bounds model size: stage cooling budgets, energy per MAC, power/latency/memory constraints → MACs per round, superconducting-architecture landscape (cryo-CMOS, cryo-FPGA, SFQ) | 2026-10-29 → |
 | [mwpm_gap_derivation.md](mwpm_gap_derivation.md) | How PyMatching builds its graph, what decomposing hyperedges throws away, and an algebraic proof of why MWPM picks the wrong class | 2026-10-08 → 2026-10-20 |
 
 ## Settled conclusions
@@ -26,6 +27,7 @@ What has been learned and settled across sessions, so each session can pick up w
 4. **Compare decoders on ε per round, not on per-shot LER.**
    - Scope: d=3, 20–30 rounds base, 100+ realistic.
    - MWPM's fitted ε is flat from r=3 to r=100. At p=1e-3 it is 2.40e-4.
+   - The pipeline reproduces the Stim tutorial's PyMatching numbers (threshold ≈1% per round, d=5 ε at p=1e-3 within 3%). See `mwpm_headroom.md`.
    - The per-shot LER tends to ½ for every decoder, so a coin flip at long r says nothing about MWPM.
 5. **Graphlike is the line between tractable and NP-complete.**
    - Min-weight decoding with column weight ≤ 2 reduces to perfect matching, which is in P. With weight-3 columns it is NP-complete (3DM), and exact ML is #P-hard.
