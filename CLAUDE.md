@@ -15,8 +15,12 @@ The project is detailed in PROJECT.md (reference this for direction and detailed
 ├── PROJECT.md [project context]
 ├── code
 │   ├── [team notebooks: data_pipe, mwpm, preprocessing]
+│   ├── pipeline
+│   │   └── [production pipeline: scripts + config.json; TRACKER.md = decisions/roadmap; data/ gitignored]
 │   └── claude
-│       └── [scripts written by Claude, kept separate from team work]
+│       ├── [scripts written by Claude, kept separate from team work]
+│       ├── pipeline [archived one-shot PoC notebook: Stim/SI1000 → tiny transformer, r=3 fixed]
+│       └── stim_pipeline [archived early Stim + PyMatching data script]
 ├── deliverables
 │   └── [course submissions, e.g. QEC_Project_Schedule.xlsx]
 ├── project_docs_context

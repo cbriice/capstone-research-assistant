@@ -1,0 +1,19 @@
+{
+  "seed": 1234,
+  "circuit": {
+    "distance": 3,
+    "basis": "z",
+    "p": 0.001
+  },
+  "rounds": {
+    "short_bucket": [3, 30],
+    "long_bucket": [31, 100],
+    "long_fraction": 0.2
+  },
+  "dataset": {
+    "train_val_shots": 10000000,
+    "val_fraction": 0.1,
+    "test_shots": 2000000,
+    "train_empty_keep_fraction": 0.333
+  }
+}

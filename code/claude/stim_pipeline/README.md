@@ -14,7 +14,7 @@ observable flips `y`, aligned shot by shot. PyMatching only predicts those flips
 Open the repository in VS Code, then run these commands from the repository root:
 
 ```bash
-cd code/stim_pipeline
+cd code/claude/stim_pipeline
 
 # Only create this environment if it does not already exist.
 if [ ! -d .venv ]; then python3 -m venv .venv; fi
@@ -31,7 +31,7 @@ python run_experiment.py --output-dir data
 The environment is local and is not committed. In VS Code, run **Python: Select
 Interpreter** from the Command Palette and select
 `code/stim_pipeline/.venv/bin/python`. Run the commands above from
-`code/stim_pipeline/`. Python 3.9 or newer is required;
+`code/claude/stim_pipeline/`. Python 3.9 or newer is required;
 some Python/platform combinations may build Stim from source.
 
 If `data/` already exists, the runner deliberately refuses to overwrite it:

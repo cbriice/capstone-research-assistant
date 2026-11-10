@@ -8,6 +8,8 @@ Scripts written by Claude (research assistant), kept separate from team-authored
 - `worst_syndrome.py`: breaks down the syndrome where MWPM loses most to optimal: the exact P(s, L), the true vs graph costs of the leading explanations, and the DEM lines feeding each matched edge. See §4.
 - `mwpm_runtime.py`: PyMatching time per shot vs number of defects on random circuit noise (d=3, 11), plus an adversarial contiguous defect block (~k² even, ~k³ odd). See `research_log/decoder_complexity.md` §3. It takes about 3 min.
 - `exact_sweep.py`: exact per-shot ML/MLE decoding at any r, by sweeping the DEM in time. The state is 2^(w+1), with frontier w=11 at d=3. It is validated against `exact_decoding.py` at r=3 and takes about 80 ms/shot at r=25. See `research_log/decoder_complexity.md` §4.
+- `pipeline/` (archived): one-shot PoC notebook (Stim with hand-written SI1000 → tiny transformer, d=3, r=3 fixed). Reference only; superseded by `code/pipeline/`.
+- `stim_pipeline/` (archived): early Stim + PyMatching data-generation script. Reference only.
 - `build_schedule.py`: generates `deliverables/QEC_Project_Schedule.xlsx` (WBS, Milestones, Gantt, Notes) from the task list hard-coded at the top. It needs `openpyxl`. Edit the task list, then run `python build_schedule.py deliverables/QEC_Project_Schedule.xlsx`. The Gantt bars are plain cell fills, so they render in Numbers as well as Excel.
 
 The method: XOR-convolve each DEM error mechanism into the joint distribution P(s, L) over all 2^25 outcomes. The optimal decoder's LER is Σ_s min(P(s,0), P(s,1)).
