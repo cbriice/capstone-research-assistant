@@ -10,7 +10,7 @@ cd code
 ```
 
 - Each run writes a new versioned folder `data/<YYYY-MM-DD_HHMMSS>/` (local time). Runs never overwrite each other, and each folder's `manifest.json` records the config that produced it.
-- `data/` is gitignored. A run is regenerable from its seed in about 30 s and takes about 53 MB.
+- `data/` is gitignored. A run is regenerable from its seed in about 4 s and takes about 11 MB (compressed npz; ~8× larger once loaded, since each bit is a byte).
 - Identical output on rerun was verified (same Stim version and machine). Stim only guarantees identical shots for the same seed on the same version and machine.
 
 ## v1.0 — current
@@ -26,8 +26,8 @@ cd code
 | 5 | Round counts | short bucket [3, 30], long bucket [31, 100] | Real experiments range from ≤3 to 100+ rounds. Fixed-r training (the PoC) doesn't test generalization across lengths |
 | 6 | Train/val mix | 80% short / 20% long | Biased toward short sequences; long ones are "harder" but still seen in training |
 | 7 | Allocation over r | stratified: fixed equal count per r within a bucket | Each r is its own circuit anyway; no sampling noise in the mix |
-| 8 | Train / val size | 1e7 total; val = 10% (1e6), train = 9e6 | Val has its own seed, which is equivalent to a random held-out split and avoids splitting arrays of different lengths |
-| 9 | Test | 2e6 shots, **even over every r in 3..100** (≈20.4k per r) | Per-r error bars. An 80/20 test set would give ~560 shots per long r |
+| 8 | Train / val size | 1e6 total; val = 10% (1e5), train = 9e5 | Val has its own seed, which is equivalent to a random held-out split and avoids splitting arrays of different lengths |
+| 9 | Test | 2e5 shots, **even over every r in 3..100** (≈2.04k per r) | Per-r error bars. An 80/20 test set would give ~560 shots per long r |
 | 10 | Empty shots | **train only**: keep each empty shot with probability 1/3 (`train_empty_keep_fraction`). Val and test keep the natural distribution | The drop depends on the syndrome only, so P(label \| syndrome) is unchanged. Dropping from val/test would bias the reported LER |
 | 11 | Seeds | one RNG stream per (seed, split, r) | Splits independent; any (split, r) file can be regenerated on its own |
 | 12 | Ground-truth errors | not stored | Seeded generation lets us regenerate the exact shots with `return_errors=True` when v2 needs per-window labels |
@@ -40,26 +40,25 @@ data/<YYYY-MM-DD_HHMMSS>/     one folder per run
 ├── manifest.json        config, Stim/NumPy versions, per (split, r): shots, num_detectors, label_rate,
 │                        empty_fraction, empty_fraction_before_drop
 ├── circuits/r{r:03d}.stim, .dem    the circuit and decomposed DEM for each round count
-└── {train,val,test}/r{r:03d}.npz   dets [n, ceil(D/8)] uint8, obs [n, 1] uint8, rounds, num_detectors
+└── {train,val,test}/r{r:03d}.npz   dets [n, D] uint8, obs [n, 1] uint8, rounds, num_detectors
 ```
 
-Bits are packed with `bitorder='little'` (Stim's convention). Unpack with:
+`dets` and `obs` are raw 0/1 (not bit-packed), ready to feed the model:
 
 ```python
-z = np.load("data/2026-11-10_121207/test/r100.npz")
-dets = np.unpackbits(z["dets"], axis=1, bitorder="little", count=int(z["num_detectors"])).astype(bool)
-obs = np.unpackbits(z["obs"], axis=1, bitorder="little", count=1).astype(bool)
+z = np.load("data/2026-11-11_202506/test/r100.npz")
+dets, obs = z["dets"], z["obs"]   # uint8 0/1, [n, D] and [n, 1]
 ```
 
 Detectors are in Stim's order. Their (x, y, t) are in the run's `circuits/r{r:03d}.stim` via `get_detector_coordinates()`.
 
-### Generated: run `2026-11-10_121207` (Stim 1.16.0)
+### Generated: run `2026-11-11_202506` (Stim 1.16.0)
 
 | split | shots | empty | label = 1 |
 |---|---|---|---|
-| train | 9,000,000 | 19.7% (after drop) | 15.07% |
-| val | 1,000,000 | 37.0% | 12.38% |
-| test | 2,000,000 | 16.5% | 21.17% |
+| train | 900,000 | 19.7% (after drop) | 15.10% |
+| val | 100,000 | 37.0% | 12.38% |
+| test | 200,000 | 16.3% | 21.20% |
 
 Empty fraction in train, before → after the drop: r=3: 84.2% → 64.0%, r=10: 58.0% → 31.5%, r=30: 20.0% → 7.7%, r=100: 0.5% → 0.2%.
 

@@ -19,7 +19,7 @@ from config import DATA_DIR, DEFAULT_CONFIG_PATH, load_config
 
 SPLITS = ("train", "val", "test")
 SPLIT_IDS = {"train": 0, "val": 1, "test": 2}   # part of each (split, rounds) seed; never reorder
-MAX_CHUNK = 1 << 20                             # max shots per sampler call, bounds peak memory
+MAX_CHUNK_BYTES = 1 << 28                       # max detector bytes per sampler call (1 byte per bit), bounds peak memory
 
 
 def make_circuit(distance: int, rounds: int, p: float, basis: str) -> stim.Circuit:
@@ -54,14 +54,16 @@ def sample_round(dem: stim.DetectorErrorModel, n_target: int, empty_keep: float,
                  rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray, float]:
     # Sample until n_target shots are kept. Empty shots (no detector fired) are kept with probability
     # empty_keep; the decision depends on the syndrome only, so P(label | syndrome) is unchanged.
-    # Returns bit-packed dets [n, ceil(D/8)], bit-packed obs [n, 1], and the empty fraction before dropping.
+    # Returns dets [n, D] and obs [n, 1] as uint8 0/1 (one byte per bit), and the empty fraction before dropping.
     sampler = dem.compile_sampler(seed=int(rng.integers(2**32)))
+    max_chunk = MAX_CHUNK_BYTES // dem.num_detectors
     dets_parts: list[np.ndarray] = []
     obs_parts: list[np.ndarray] = []
     kept = sampled = empty_sampled = 0
     while kept < n_target:
-        n = min(MAX_CHUNK, max(2 * (n_target - kept), 4096))
-        dets, obs, _ = sampler.sample(n, bit_packed=True)
+        n = min(max_chunk, max(2 * (n_target - kept), 4096))
+        dets, obs, _ = sampler.sample(n)                 # bool arrays
+        dets, obs = dets.view(np.uint8), obs.view(np.uint8)   # same bytes, 0/1 values
         empty = ~dets.any(axis=1)
         keep = ~empty | (rng.random(n) < empty_keep) if empty_keep < 1 else np.ones(n, dtype=np.bool_)
         dets_parts.append(dets[keep])
@@ -89,8 +91,7 @@ def main() -> None:
         "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "versions": {pkg: version(pkg) for pkg in ("stim", "numpy")},
         "config": cfg,
-        "format": "dets/obs bit-packed uint8, bitorder little; unpack with "
-                  "np.unpackbits(a, axis=1, bitorder='little', count=num_detectors)",
+        "format": "dets [n, num_detectors] and obs [n, 1], uint8 0/1, not bit-packed",
         "splits": {split: {} for split in SPLITS},
     }
 

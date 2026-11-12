@@ -11,9 +11,9 @@
     "long_fraction": 0.2
   },
   "dataset": {
-    "train_val_shots": 10000000,
+    "train_val_shots": 1000000,
     "val_fraction": 0.1,
-    "test_shots": 2000000,
+    "test_shots": 200000,
     "train_empty_keep_fraction": 0.333
   }
 }
