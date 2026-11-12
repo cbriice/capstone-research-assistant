@@ -46,19 +46,19 @@ data/<YYYY-MM-DD_HHMMSS>/     one folder per run
 `dets` and `obs` are raw 0/1 (not bit-packed), ready to feed the model:
 
 ```python
-z = np.load("data/2026-11-11_202506/test/r100.npz")
+z = np.load("data/2026-11-11_204554/test/r100.npz")
 dets, obs = z["dets"], z["obs"]   # uint8 0/1, [n, D] and [n, 1]
 ```
 
 Detectors are in Stim's order. Their (x, y, t) are in the run's `circuits/r{r:03d}.stim` via `get_detector_coordinates()`.
 
-### Generated: run `2026-11-11_202506` (Stim 1.16.0)
+### Generated: run `2026-11-11_204554` (Stim 1.16.0)
 
 | split | shots | empty | label = 1 |
 |---|---|---|---|
 | train | 900,000 | 19.7% (after drop) | 15.10% |
-| val | 100,000 | 37.0% | 12.38% |
-| test | 200,000 | 16.3% | 21.20% |
+| val | 100,000 | 37.0% | 12.47% |
+| test | 200,000 | 16.3% | 21.23% |
 
 Empty fraction in train, before → after the drop: r=3: 84.2% → 64.0%, r=10: 58.0% → 31.5%, r=30: 20.0% → 7.7%, r=100: 0.5% → 0.2%.
 

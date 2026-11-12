@@ -61,18 +61,20 @@ def sample_round(dem: stim.DetectorErrorModel, n_target: int, empty_keep: float,
     obs_parts: list[np.ndarray] = []
     kept = sampled = empty_sampled = 0
     while kept < n_target:
-        n = min(max_chunk, max(2 * (n_target - kept), 4096))
-        dets, obs, _ = sampler.sample(n)                 # bool arrays
-        dets, obs = dets.view(np.uint8), obs.view(np.uint8)   # same bytes, 0/1 values
-        empty = ~dets.any(axis=1)
-        keep = ~empty | (rng.random(n) < empty_keep) if empty_keep < 1 else np.ones(n, dtype=np.bool_)
+        need = n_target - kept
+        # With a drop, the kept count per batch is random: oversample 2x (floor 4096) and trim at the end.
+        n = min(max_chunk, need if empty_keep == 1 else max(2 * need, 4096))
+        dets, obs, _ = sampler.sample(n)                         # bool [n, D], [n, 1]
+        empty = ~dets.any(axis=1)                                # elementwise NOT
+        keep = ~empty | (rng.random(n) < empty_keep)             # all True when empty_keep == 1
         dets_parts.append(dets[keep])
         obs_parts.append(obs[keep])
         kept += int(keep.sum())
         sampled += n
         empty_sampled += int(empty.sum())
-    return (np.concatenate(dets_parts)[:n_target], np.concatenate(obs_parts)[:n_target],
-            empty_sampled / sampled)
+    dets = np.concatenate(dets_parts)[:n_target].view(np.uint8)  # same bytes, 0/1 values
+    obs = np.concatenate(obs_parts)[:n_target].view(np.uint8)
+    return dets, obs, empty_sampled / sampled
 
 
 def main() -> None:
