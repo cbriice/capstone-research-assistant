@@ -16,10 +16,40 @@ SCHEMA: dict[str, Any] = {
     "dataset": {"train_val_shots": int, "val_fraction": float, "test_shots": int, "train_empty_keep_fraction": float},
 }
 
-def load_config(path: Path = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
-    with open(path, encoding="utf-8") as f:
-        cfg: dict[str, Any] = json.load(f)
+# ==================================== CONFIG ===============================================
+TRAIN_VAL_SHOTS = 1000000
 
+CONFIG: dict = {
+  "seed": 1234,
+  "circuit": {
+    "distance": 3,
+    "basis": "z",
+    "p": 0.001
+  },
+  "rounds": {
+    "short_bucket": [3, 30],
+    "long_bucket": [31, 100],
+    "long_fraction": 0.2
+  },
+  "dataset": {
+    "train_val_shots": TRAIN_VAL_SHOTS,
+    "val_fraction": 0.1,
+    "test_shots": 0.2*TRAIN_VAL_SHOTS,
+    "train_empty_keep_fraction": 0.333
+  },
+  "training": {
+    "attention_heads": 1,
+    "d_ff": 32,
+    "L": 2,
+    "dropout": 0.05,
+    "mlp_activation": "GeLU",    # ReLU, GeLU, etc.
+  }
+}
+
+# ============================================================================================
+
+def load_config(CONFIG: dict) -> dict[str, Any]:
+    cfg = CONFIG
     # exact key sets: typos and missing keys fail at load time
     assert set(cfg) == set(SCHEMA), f"top-level keys must be {sorted(SCHEMA)}, got {sorted(cfg)}"
     for block, keys in SCHEMA.items():
