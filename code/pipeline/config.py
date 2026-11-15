@@ -46,6 +46,11 @@ CONFIG: dict = {
   }
 }
 
+"""
+notes: 
+z = w^Tg + b, g = 1/N * sum(LN(e_L)); z is per-basis. 
+- training trials start with 1 head memory Z for simplicity. in practice we have >=2 heads, one for memory X and one for memory Z. 
+"""
 # ============================================================================================
 
 def load_config(CONFIG: dict) -> dict[str, Any]:
