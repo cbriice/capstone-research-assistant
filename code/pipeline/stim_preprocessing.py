@@ -2,6 +2,7 @@ import numpy as np
 import stim
 from pathlib import Path
 import json
+import torch
  
  
 def load_tokens(run_dir, split, r):
@@ -14,7 +15,7 @@ def load_tokens(run_dir, split, r):
     if dets.shape[1] != circuit.num_detectors:      # older bit-packed runs
         dets = np.unpackbits(dets, axis=1, bitorder="little", count=circuit.num_detectors)
     labels = f["obs"][:, 0]
-    return make_tokens(circuit, dets.astype(bool), basis), labels
+    return torch.tensor(make_tokens(circuit, dets.astype(bool)), basis), torch.tensor(labels)
  
 def create_position_features(circuit: stim.Circuit, syndrome: np.ndarray) -> np.ndarray:
     stab_coords = circuit.get_detector_coordinates()                                            #gets stabilizer coordinates from stim circuit
