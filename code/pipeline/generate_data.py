@@ -80,7 +80,7 @@ def sample_round(dem: stim.DetectorErrorModel, n_target: int, empty_keep: float,
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
-    cfg = load_config(parser.parse_args().config)
+    cfg = load_config()
 
     run_dir = DATA_DIR / datetime.now().strftime("%Y-%m-%d_%H%M%S")   # one folder per run, local time
     for sub in ("circuits", *SPLITS):

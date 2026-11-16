@@ -8,15 +8,8 @@ PIPELINE_DIR = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = PIPELINE_DIR / "config.json"
 DATA_DIR = PIPELINE_DIR / "data"
 
-# Every key the pipeline accepts. A key in config.json that isn't listed here is an error, so typos fail loudly.
-SCHEMA: dict[str, Any] = {
-    "seed": int,
-    "circuit": {"distance": int, "basis": str, "p": float},
-    "rounds": {"short_bucket": list, "long_bucket": list, "long_fraction": float},
-    "dataset": {"train_val_shots": int, "val_fraction": float, "test_shots": int, "train_empty_keep_fraction": float},
-}
-
 # ==================================== CONFIG ===============================================
+# some params are related. declare them here so that they can be used in computations to preserve ratios
 TRAIN_VAL_SHOTS = 1000000
 
 CONFIG: dict = {
@@ -34,33 +27,42 @@ CONFIG: dict = {
   "dataset": {
     "train_val_shots": TRAIN_VAL_SHOTS,
     "val_fraction": 0.1,
-    "test_shots": 0.2*TRAIN_VAL_SHOTS,
+    "test_shots": int(0.2*TRAIN_VAL_SHOTS),
     "train_empty_keep_fraction": 0.333
   },
   "training": {
-    "attention_heads": 1,
-    "d_ff": 32,
-    "L": 2,
-    "dropout": 0.05,
-    "mlp_activation": "GeLU",    # ReLU, GeLU, etc.
+    "encoder": {                   # nn.TransformerEncoderLayer(**encoder); head size is fixed at d_model / nhead
+      "d_model": 16,
+      "nhead": 1,
+      "dim_feedforward": 32,
+      "dropout": 0.05,
+      "activation": "gelu",        # relu | gelu
+      "batch_first": True,         # tokens are (shots, detectors, features). torch should not auto batch our data
+    },
+    "num_layers": 2,               # nn.TransformerEncoder(layer, num_layers)
+    "batch_size": 1000,
+    "warmup_ratio": 0.1,
+    "lr_scheduler": "cosine",
+    "num_epochs": 5,
+    "lr": 3e-5,
+    "weight_decay": 0.01,           # L2 regularization term for AdamW applied to each theta directly 
   }
 }
 
 """
-notes: 
+CONFIG NOTES: 
 z = w^Tg + b, g = 1/N * sum(LN(e_L)); z is per-basis. 
 - training trials start with 1 head memory Z for simplicity. in practice we have >=2 heads, one for memory X and one for memory Z. 
+- consequence of this: with two heads for z and x, d across board should probably increase. need to understand mathematically whether enough
+  unique information is stored in each z and x embedding that d_model *= 2 makes sense or if u can be fine with some overlap
+- setting d_k higher than d_model/nhead gains no expressive power because rank(Ah) <= d_model. more params, same function class, no extra value.
+    - useful when d_k < d/n_h (low-rank sim score while preserving residual stream information; d >= d_k > d/n_h (many heads, d/n_h too small)
+    - torch.nn.TransformerEncoder doesnt take d_k as param so for now we just leave it as d/n_h
 """
 # ============================================================================================
 
-def load_config(CONFIG: dict) -> dict[str, Any]:
+def load_config() -> dict[str, Any]:
     cfg = CONFIG
-    # exact key sets: typos and missing keys fail at load time
-    assert set(cfg) == set(SCHEMA), f"top-level keys must be {sorted(SCHEMA)}, got {sorted(cfg)}"
-    for block, keys in SCHEMA.items():
-        if isinstance(keys, dict):
-            assert set(cfg[block]) == set(keys), f"{block}: keys must be {sorted(keys)}, got {sorted(cfg[block])}"
-
     c, r, d = cfg["circuit"], cfg["rounds"], cfg["dataset"]
     # validate config params
     assert c["distance"] >= 3 and c["distance"] % 2 == 1, "circuit.distance must be odd and >= 3"
@@ -73,5 +75,9 @@ def load_config(CONFIG: dict) -> dict[str, Any]:
     assert 0 < d["val_fraction"] < 1, "dataset.val_fraction must be in (0, 1)"
     assert d["train_val_shots"] > 0 and d["test_shots"] > 0, "shot counts must be positive"
     assert 0 < d["train_empty_keep_fraction"] <= 1, "dataset.train_empty_keep_fraction must be in (0, 1]"
+
+    t = cfg["training"]
+    e = t["encoder"]
+    assert e["d_model"] % e["nhead"] == 0, "training.encoder.d_model must be divisible by nhead"
 
     return cfg
