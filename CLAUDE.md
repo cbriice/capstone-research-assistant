@@ -17,6 +17,8 @@ The project is detailed in PROJECT.md (reference this for direction and detailed
 │   ├── [team notebooks: data_pipe, mwpm, preprocessing]
 │   ├── pipeline
 │   │   └── [production pipeline: scripts + config.json; TRACKER.md = decisions/roadmap; data/ gitignored]
+│   ├── train_plots
+│   │   └── [git-tracked training plots, one folder per run; written by claude/plot_training.py]
 │   └── claude
 │       ├── [scripts written by Claude, kept separate from team work]
 │       ├── pipeline [archived one-shot PoC notebook: Stim/SI1000 → tiny transformer, r=3 fixed]
