@@ -128,7 +128,7 @@ def run_training():
 
     # epoch outer loop
     for epoch in range(E):
-        log.info("Beginning epoch %s", epoch)
+        log.info("Beginning epoch %s", epoch+1)
         # shuffle the chunks to randomize train order
         random.shuffle(chunks)
 
