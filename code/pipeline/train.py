@@ -1,12 +1,12 @@
 import torch, torch.nn as nn
-from config import load_config
-from stim_preprocessing import load_tokens
+from pipeline.config import load_config
+from pipeline.stim_preprocessing import load_tokens
 import random
 import logging
 import json
 from datetime import datetime
-from typing import Dict, List
 from pathlib import Path
+from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 
 # each training run gets its own folder under WORK_DIR: checkpoints, final model, train.log
 WORK_DIR = "pipeline/data/train/"
@@ -56,11 +56,17 @@ def get_elements(steps):
     model = Decoder().to(device)
     # use AdamW as default. maybe we change this idk its pretty standard
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=t["weight_decay"])
+    # warmup + either cosine or linear depending on config. linear default is arbitrary choice
+    warmup_steps = max(1, int(t["warmup_ratio"])*steps)
     if t["lr_scheduler"] == "cosine":
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=opt, T_max=steps)
+        warmup = LinearLR(opt, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)
+        cosine = CosineAnnealingLR(opt, T_max=steps - warmup_steps)
+        scheduler = SequentialLR(opt, schedulers=[warmup, cosine], milestones=[warmup_steps])
     else:
-        # arbitrarily choose linear 10*LR max for default. could be changed
-        scheduler = torch.optim.lr_scheduler.LinearLR(optimizer=opt, end_factor=10, total_iters=steps)
+        warmup = LinearLR(opt, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)
+        linear = LinearLR(opt, start_factor=1.0, end_factor=1e-3)
+        scheduler = SequentialLR(opt, schedulers=[warmup, linear], milestones=[warmup_steps])
+
     loss_fn = nn.BCEWithLogitsLoss()
 
     return device, model, opt, scheduler, loss_fn
@@ -82,7 +88,7 @@ def save_checkpoint(model: Decoder, opt, scheduler, path, step):
 
 # ======================= training loop ============================
 
-def run_training() -> Dict[int, List[float]]:
+def run_training():
     start_time = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     save_path = WORK_DIR + start_time
     Path(save_path).mkdir(parents=True, exist_ok=True)
@@ -94,6 +100,8 @@ def run_training() -> Dict[int, List[float]]:
             
     # global step counter
     num_steps = 0
+    # loss tracker
+    losses = []
 
     # load training data and unpack rounds in fixed batch sizes
     # assume working dir is code/ and data is fixed under pipeline/data/{day}/train
@@ -130,9 +138,10 @@ def run_training() -> Dict[int, List[float]]:
             opt.step() # update weights
             scheduler.step() # update lr
 
-            # every 50 steps, run evaluate()
-            if i % 50 == 0:
+            # every 100 steps, run evaluate()
+            if i % 100 == 0:
                 log.info("entering eval at steps=%d | loss=%.4g", num_steps+i, loss.item())
+                losses.append(loss.item())
                 for r in eval_rounds:
                     log.info("evaluating at r=%d", r)
                     Xv, yv = eval_data[r]
@@ -143,8 +152,9 @@ def run_training() -> Dict[int, List[float]]:
                     lers[r].append(ler.item())
         # save checkpoint at each epoch
         num_steps += len(chunks)
-        log.info("saving checkpoint for epoch %d", epoch)
-        save_checkpoint(model, opt, scheduler, save_path + f"/e{epoch:02d}", num_steps)
+        log.info("saving checkpoint for epoch %d", epoch+1)
+        # don't need to save checkpoint for last epoch
+        if epoch != 4: save_checkpoint(model, opt, scheduler, save_path + f"/e{epoch:02d}", num_steps)
 
     model_path = save_path + "/model"
     log.info("TRAINING FINISHED")
@@ -153,7 +163,8 @@ def run_training() -> Dict[int, List[float]]:
         "config": t_cfg,
         "model": model.state_dict()
     }, model_path)
-    return lers
+    # return data for analysis
+    return lers, losses, total_steps
             
 if __name__ == "__main__":
     run_training()
