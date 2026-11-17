@@ -43,7 +43,7 @@ CONFIG: dict = {
     "batch_size": 1000,
     "warmup_ratio": 0.1,
     "lr_scheduler": "linear",
-    "num_epochs": 10,
+    "num_epochs": 5,              
     "lr": 5e-4,
     "weight_decay": 0.01,           # L2 regularization term for AdamW applied to each theta directly 
   }

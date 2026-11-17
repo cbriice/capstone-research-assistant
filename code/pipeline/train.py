@@ -1,9 +1,7 @@
 import torch, torch.nn as nn
 from pipeline.config import load_config
 from pipeline.stim_preprocessing import load_tokens
-import random
-import logging
-import json
+import json, logging, random, time
 from datetime import datetime
 from pathlib import Path
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
@@ -57,14 +55,14 @@ def get_elements(steps):
     # use AdamW as default. maybe we change this idk its pretty standard
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=t["weight_decay"])
     # warmup + either cosine or linear depending on config. linear default is arbitrary choice
-    warmup_steps = max(1, int(t["warmup_ratio"])*steps)
+    warmup_steps = max(1, int(t["warmup_ratio"]*steps))
     if t["lr_scheduler"] == "cosine":
         warmup = LinearLR(opt, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)
         cosine = CosineAnnealingLR(opt, T_max=steps - warmup_steps)
         scheduler = SequentialLR(opt, schedulers=[warmup, cosine], milestones=[warmup_steps])
     else:
         warmup = LinearLR(opt, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)
-        linear = LinearLR(opt, start_factor=1.0, end_factor=1e-3)
+        linear = LinearLR(opt, start_factor=1.0, end_factor=1e-3, total_iters=warmup_steps)
         scheduler = SequentialLR(opt, schedulers=[warmup, linear], milestones=[warmup_steps])
 
     loss_fn = nn.BCEWithLogitsLoss()
@@ -89,6 +87,7 @@ def save_checkpoint(model: Decoder, opt, scheduler, path, step):
 # ======================= training loop ============================
 
 def run_training():
+    start = time.time()
     start_time = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     save_path = WORK_DIR + start_time
     Path(save_path).mkdir(parents=True, exist_ok=True)
@@ -100,9 +99,6 @@ def run_training():
             
     # global step counter
     num_steps = 0
-    # loss tracker
-    losses = []
-
     # load training data and unpack rounds in fixed batch sizes
     # assume working dir is code/ and data is fixed under pipeline/data/{day}/train
     batches = {r: load_tokens(DATA_DIR, "train", r) for r in range(3, 101)}
@@ -112,10 +108,12 @@ def run_training():
 
     # load eval data
     lers = {}
+    losses = {}
     eval_data = {}
     eval_rounds = [3, 10, 30, 60, 100]
     for r in eval_rounds:
         lers[r] = []
+        losses[r] = []
         Xv, yv = load_tokens(DATA_DIR, "val", r)
         Xv, yv = Xv.to(device), yv.to(device)
         eval_data[r] = (Xv, yv)
@@ -140,15 +138,15 @@ def run_training():
 
             # every 100 steps, run evaluate()
             if i % 100 == 0:
-                log.info("entering eval at steps=%d | loss=%.4g", num_steps+i, loss.item())
-                losses.append(loss.item())
+                log.info("entering eval at steps=%d", num_steps+i)
                 for r in eval_rounds:
                     Xv, yv = eval_data[r]
                     ler = evaluate(model, Xv, yv)
-                    log.info("r= %d, LER: %.4g", r, ler.item())
+                    log.info("r= %d, LER: %.4g, loss=%.4g", r, ler.item(), loss.item())
                     if ler > 0.5:
                         log.warning("High LER detected")
                     lers[r].append(ler.item())
+                    losses[r].append(loss.item())
         # save checkpoint at each epoch
         num_steps += len(chunks)
         log.info("saving checkpoint for epoch %d", epoch+1)
@@ -156,7 +154,8 @@ def run_training():
         if epoch != 4: save_checkpoint(model, opt, scheduler, save_path + f"/e{epoch:02d}", num_steps)
 
     model_path = save_path + "/model"
-    log.info("TRAINING FINISHED")
+    end = time.time()
+    log.info(f"TRAINING FINISHED | elapsed: {end - start}s")
     log.info("Saving model to %s\n", model_path)
     torch.save({
         "config": t_cfg,
