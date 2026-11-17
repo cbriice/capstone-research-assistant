@@ -38,16 +38,14 @@ def split_evenly(total: int, rounds: list[int]) -> dict[int, int]:
 
 
 def shots_per_round(cfg: dict[str, Any], split: str) -> dict[int, int]:
-    # Stratified allocation: a fixed number of shots per round count (no random draw of r).
-    rc, dc = cfg["rounds"], cfg["dataset"]
-    short = list(range(rc["short_bucket"][0], rc["short_bucket"][1] + 1))
-    long = list(range(rc["long_bucket"][0], rc["long_bucket"][1] + 1))
-    if split == "test":                                    # even over every r, for per-r profiling
-        return split_evenly(dc["test_shots"], short + long)
-    n_val = round(dc["train_val_shots"] * dc["val_fraction"])
-    total = n_val if split == "val" else dc["train_val_shots"] - n_val
-    n_long = round(total * rc["long_fraction"])            # train and val share the short/long mix
-    return split_evenly(total - n_long, short) | split_evenly(n_long, long)
+    # Stratified allocation: equal shots per round count over every r in [min, max] (no random draw of r).
+    (lo, hi), dc = cfg["rounds"], cfg["dataset"]
+    if split == "test":
+        total = dc["test_shots"]
+    else:
+        n_val = round(dc["train_val_shots"] * dc["val_fraction"])
+        total = n_val if split == "val" else dc["train_val_shots"] - n_val
+    return split_evenly(total, list(range(lo, hi + 1)))
 
 
 def sample_round(dem: stim.DetectorErrorModel, n_target: int, empty_keep: float,
