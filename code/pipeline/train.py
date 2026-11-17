@@ -21,7 +21,7 @@ def setup_logger(log_path: str) -> logging.Logger:
     return log
 
 # data directory
-DATA_DIR = "pipeline/data/2026-11-15_202422/"
+DATA_DIR = "pipeline/data/2026-11-17_144943/"
 
 # initialize TransformerEncoder from config
 cfg = load_config()
