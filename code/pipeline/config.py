@@ -42,7 +42,7 @@ CONFIG: dict = {
     "num_layers": 2,               # nn.TransformerEncoder(layer, num_layers)
     "batch_size": 1000,
     "warmup_ratio": 0.1,
-    "lr_scheduler": "linear",
+    "lr_scheduler": "cosine",
     "num_epochs": 5,              
     "lr": 5e-4,
     "weight_decay": 0.01,           # L2 regularization term for AdamW applied to each theta directly 
