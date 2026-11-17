@@ -62,7 +62,7 @@ def get_elements(steps):
         scheduler = SequentialLR(opt, schedulers=[warmup, cosine], milestones=[warmup_steps])
     else:
         warmup = LinearLR(opt, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)
-        linear = LinearLR(opt, start_factor=1.0, end_factor=1e-3, total_iters=warmup_steps)
+        linear = LinearLR(opt, start_factor=1.0, end_factor=1e-3, total_iters=steps - warmup_steps)
         scheduler = SequentialLR(opt, schedulers=[warmup, linear], milestones=[warmup_steps])
 
     loss_fn = nn.BCEWithLogitsLoss()
