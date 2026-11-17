@@ -7,7 +7,8 @@ Run from anywhere (it chdirs to code/ so train.py's relative paths resolve):
 Output (git-tracked): code/train_plots/<timestamp>[_tag]/
     loss.png      val BCE per round family vs eval step
     ler.png       val LER per round family vs eval step
-    metrics.json  raw lers/losses + training config, so plots can be redrawn without retraining
+    config.json   full config from load_config() used for this run
+    metrics.json  raw lers/losses + total_steps, so plots can be redrawn without retraining
 """
 
 import argparse, json, os, sys
@@ -73,9 +74,9 @@ def main():
     plot_series(losses, E, "val BCE (nats)", "Val loss per round family", out / "loss.png")
     plot_series(lers, E, "logical error rate", "Val LER per round family", out / "ler.png")
 
+    (out / "config.json").write_text(json.dumps(cfg, indent=2))
     (out / "metrics.json").write_text(json.dumps({
         "total_steps": total_steps,
-        "config": cfg,
         "lers": {str(r): v for r, v in lers.items()},
         "losses": {str(r): v for r, v in losses.items()},
     }, indent=2))
