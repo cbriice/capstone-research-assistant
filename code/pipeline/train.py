@@ -145,11 +145,11 @@ def run_training():
                 for r in eval_rounds:
                     Xv, yv = eval_data[r]
                     ler, loss_eval = evaluate(model, loss_fn, Xv, yv)
-                    log.info("r= %d, LER: %.4g, loss=%.4g", r, ler.item(), loss_eval.item())
+                    log.info("r= %d, LER: %.4g, loss=%.4g", r, ler.item(), loss_eval)
                     if ler > 0.5:
                         log.warning("High LER detected")
                     lers[r].append(ler.item())
-                    losses[r].append(loss_eval.item())
+                    losses[r].append(loss_eval)
         # save checkpoint at each epoch
         num_steps += len(chunks)
         log.info("saving checkpoint for epoch %d", epoch+1)
