@@ -23,11 +23,11 @@ cd code
 | 2 | p | 1e-3, fixed | Fixed p for v1 |
 | 3 | Code | rotated surface code, d = 3, memory-Z only | MVP. X basis is v1.1 |
 | 4 | Sampling | from the decomposed DEM (`decompose_errors=True`), the same DEM PyMatching uses | Checked at r=10 with 2M shots: circuit and DEM samplers agree within noise (≤1.7σ) |
-| 5 | Round counts | short bucket [3, 30], long bucket [31, 100] | Real experiments range from ≤3 to 100+ rounds. Fixed-r training (the PoC) doesn't test generalization across lengths |
-| 6 | Train/val mix | 80% short / 20% long | Biased toward short sequences; long ones are "harder" but still seen in training |
-| 7 | Allocation over r | stratified: fixed equal count per r within a bucket | Each r is its own circuit anyway; no sampling noise in the mix |
+| 5 | Round counts | every r in [3, 25], all splits (2026-11-17; was [3, 30] + [31, 100]) | Fixed-r training (the PoC) doesn't test generalization across lengths. Cut to ≤25 because 25–100 rounds is impractical for the tiny transformer; matches AQ1 pretraining lengths ({1, 3, …, 25}, `alphaqubit_1.pdf` §A.6.1). Longer r moves to the length-generalization test (1.4) |
+| 6 | Train/val mix | ~~80% short / 20% long~~ removed with the buckets (2026-11-17) | Single range, so equal weight per r |
+| 7 | Allocation over r | stratified: fixed equal count per r (train ≈39.1k, val ≈4.35k, test ≈8.7k per r) | Each r is its own circuit anyway; no sampling noise in the mix |
 | 8 | Train / val size | 1e6 total; val = 10% (1e5), train = 9e5 | Val has its own seed, which is equivalent to a random held-out split and avoids splitting arrays of different lengths |
-| 9 | Test | 2e5 shots, **even over every r in 3..100** (≈2.04k per r) | Per-r error bars. An 80/20 test set would give ~560 shots per long r |
+| 9 | Test | 2e5 shots, **even over every r in 3..25** (≈8.7k per r) | Per-r error bars |
 | 10 | Empty shots | **train only**: keep each empty shot with probability 1/3 (`train_empty_keep_fraction`). Val and test keep the natural distribution | The drop depends on the syndrome only, so P(label \| syndrome) is unchanged. Dropping from val/test would bias the reported LER |
 | 11 | Seeds | one RNG stream per (seed, split, r) | Splits independent; any (split, r) file can be regenerated on its own |
 | 12 | Ground-truth errors | not stored | Seeded generation lets us regenerate the exact shots with `return_errors=True` when v2 needs per-window labels |
@@ -74,7 +74,8 @@ Empty fraction in train, before → after the drop: r=3: 84.2% → 64.0%, r=10: 
 - **1.1 X basis**: generate memory-X too, and add a basis flag (or rotate coordinates). Stim's CX ordering breaks the X/Z symmetry slightly, so X can't be assumed identical to Z.
 - **1.2 Noise range**: train over a range of p, with p (or a noise prior) as a feature. AQ2 is robust across a 16× range of noise strength (`project_docs_context/decoder_ML.md:109`).
 - **1.3 SI1000**: rates per operation from Gidney et al. (2021) Table 2, on a CZ-native circuit, checked against a reference implementation before use.
-- **1.4 Length generalization test**: train ≤100 rounds, test on 100–1000+ (AQ1 held from ≤25 to 10⁵; AQ2 from ≤168 to 10⁶).
+- **1.4 Length generalization test**: train ≤25 rounds, test on 100–1000+ (AQ1 held from ≤25 to 10⁵; AQ2 from ≤168 to 10⁶).
+  - not exactly this. train <= 25 rounds for v1; for long horizon we aren't predicting entire blocks of data at once, we would be maintaining a rolling context window and streaming data into the model, updating a pauli frame to keep track of errors. this is proper long horizon architecture instead of just dumping 10^5 shots into transformer. 3-25 is just for our baseline
 
 ## v2 — rolling context window (architectural change)
 

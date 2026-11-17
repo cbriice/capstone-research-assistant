@@ -19,11 +19,7 @@ CONFIG: dict = {
     "basis": "z",
     "p": 0.001
   },
-  "rounds": {
-    "short_bucket": [3, 30],
-    "long_bucket": [31, 100],
-    "long_fraction": 0.2
-  },
+  "rounds": [3, 25],              # [min, max], inclusive; equal shots per r in every split (AQ1 pretraining used 1..25)
   "dataset": {
     "train_val_shots": TRAIN_VAL_SHOTS,
     "val_fraction": 0.1,
@@ -104,11 +100,7 @@ def load_config() -> dict[str, Any]:
     # validate config params
     assert c["distance"] >= 3 and c["distance"] % 2 == 1, "circuit.distance must be odd and >= 3"
     assert 0 < c["p"] < 0.1, "circuit.p must be in (0, 0.1)"
-    for name in ("short_bucket", "long_bucket"):
-        lo_hi = r[name]
-        assert len(lo_hi) == 2 and all(isinstance(v, int) for v in lo_hi) and 1 <= lo_hi[0] <= lo_hi[1], f"rounds.{name} must be [min, max] integers with 1 <= min <= max"
-    assert r["short_bucket"][1] < r["long_bucket"][0], "rounds buckets must not overlap"
-    assert 0 <= r["long_fraction"] <= 1, "rounds.long_fraction must be in [0, 1]"
+    assert len(r) == 2 and all(isinstance(v, int) for v in r) and 1 <= r[0] <= r[1], "rounds must be [min, max] integers with 1 <= min <= max"
     assert 0 < d["val_fraction"] < 1, "dataset.val_fraction must be in (0, 1)"
     assert d["train_val_shots"] > 0 and d["test_shots"] > 0, "shot counts must be positive"
     assert 0 < d["train_empty_keep_fraction"] <= 1, "dataset.train_empty_keep_fraction must be in (0, 1]"

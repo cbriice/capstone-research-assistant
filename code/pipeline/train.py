@@ -5,6 +5,7 @@ import json, logging, random, time
 from datetime import datetime
 from pathlib import Path
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
+import numpy as np
 
 # each training run gets its own folder under WORK_DIR: checkpoints, final model, train.log
 WORK_DIR = "pipeline/data/train/"
@@ -71,12 +72,15 @@ def get_elements(steps):
 
 # define evaluate function to check progress during training. @torch.no_grad() blocks gradient computation to save memory since evaluate is an inference function
 @torch.no_grad()
-def evaluate(model: Decoder, loss_fn, v, y):
+def evaluate(model: Decoder, loss_fn, v, y, log):
     model.eval()
     logits = model(v)
-    ler = ((logits > 0) != y).float().mean()    # (model(v) > 0) converts logits to predictor values. equivalent to sigmoid(model(v)) > 0.5.
+    predictors = (logits > 0).float()           # (model(v) > 0) converts logits to predictor values. equivalent to sigmoid(model(v)) > 0.5.
+    ler = (predictors != y).float().mean()    
     loss = loss_fn(logits, y.float())           # hand-calculate loss here to track per fixed round
-    return ler.item(), loss.item()
+    if not predictors.any():
+        log.warning("EVAL: Model predicted all zero")
+    return ler.item(), loss.item(), predictors.mean(), y.mean()
 
 def save_checkpoint(model: Decoder, opt, scheduler, path, step): 
     torch.save({
@@ -104,7 +108,8 @@ def run_training():
     num_steps = 0
     # load training data and unpack rounds in fixed batch sizes
     # assume working dir is code/ and data is fixed under pipeline/data/{day}/train
-    batches = {r: load_tokens(DATA_DIR, "train", r) for r in range(3, 101)}
+    r_min, r_max = cfg["rounds"]
+    batches = {r: load_tokens(DATA_DIR, "train", r) for r in range(r_min, r_max + 1)}
     chunks = [(xs, ys) for X, y in batches.values() for xs, ys in zip(X.split(B), y.split(B))]
     total_steps = E * len(chunks)
     device, model, opt, scheduler, loss_fn = get_elements(total_steps)
@@ -113,7 +118,7 @@ def run_training():
     lers = {}
     losses = {}
     eval_data = {}
-    eval_rounds = [3, 10, 30, 60, 100]
+    eval_rounds = [3, 10, 15, 25]
     for r in eval_rounds:
         lers[r] = []
         losses[r] = []
@@ -144,8 +149,8 @@ def run_training():
                 log.info("entering eval at steps=%d", num_steps+i)
                 for r in eval_rounds:
                     Xv, yv = eval_data[r]
-                    ler, loss_eval = evaluate(model, loss_fn, Xv, yv)
-                    log.info("r= %d, LER: %.4g, loss=%.4g", r, ler, loss_eval)
+                    ler, loss_eval, pred_mean, y_mean = evaluate(model, loss_fn, Xv, yv, log)
+                    log.info("r= %d, LER=%.4g, loss=%.4g, predictor_mean=%.4g, true_mean=%0.4g", r, ler, loss_eval, pred_mean, y_mean)
                     if ler > 0.5:
                         log.warning("High LER detected")
                     lers[r].append(ler)
