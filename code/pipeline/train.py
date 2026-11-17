@@ -71,9 +71,12 @@ def get_elements(steps):
 
 # define evaluate function to check progress during training. @torch.no_grad() blocks gradient computation to save memory since evaluate is an inference function
 @torch.no_grad()
-def evaluate(model: Decoder, v, y):
+def evaluate(model: Decoder, loss_fn, v, y):
     model.eval()
-    return ((model(v) > 0)!= y).float().mean() # LER. (model(v) > 0) converts logits to predictor values. equivalent to sigmoid(model(v)) > 0.5.
+    logits = model(v)
+    ler = ((logits > 0) != y).float().mean()    # (model(v) > 0) converts logits to predictor values. equivalent to sigmoid(model(v)) > 0.5.
+    loss = loss_fn(logits, y.float())           # hand-calculate loss here to track per fixed round
+    return ler.item(), loss.item()
 
 def save_checkpoint(model: Decoder, opt, scheduler, path, step): 
     torch.save({
@@ -141,12 +144,12 @@ def run_training():
                 log.info("entering eval at steps=%d", num_steps+i)
                 for r in eval_rounds:
                     Xv, yv = eval_data[r]
-                    ler = evaluate(model, Xv, yv)
-                    log.info("r= %d, LER: %.4g, loss=%.4g", r, ler.item(), loss.item())
+                    ler, loss_eval = evaluate(model, loss_fn, Xv, yv)
+                    log.info("r= %d, LER: %.4g, loss=%.4g", r, ler.item(), loss_eval.item())
                     if ler > 0.5:
                         log.warning("High LER detected")
                     lers[r].append(ler.item())
-                    losses[r].append(loss.item())
+                    losses[r].append(loss_eval.item())
         # save checkpoint at each epoch
         num_steps += len(chunks)
         log.info("saving checkpoint for epoch %d", epoch+1)
