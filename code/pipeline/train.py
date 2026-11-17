@@ -1,9 +1,28 @@
-import torch.nn as nn
-import torch
+import torch, torch.nn as nn
 from config import load_config
 from stim_preprocessing import load_tokens
 import random
-import numpy as np
+import logging
+import json
+from datetime import datetime
+from typing import Dict, List
+from pathlib import Path
+
+# each training run gets its own folder under WORK_DIR: checkpoints, final model, train.log
+WORK_DIR = "pipeline/data/train/"
+
+def setup_logger(log_path: str) -> logging.Logger:
+    log = logging.getLogger("train")
+    log.setLevel(logging.INFO)
+    log.handlers.clear()        # avoid duplicate lines if run_training() is called twice in one process
+    fmt = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s")
+    for handler in (logging.StreamHandler(), logging.FileHandler(log_path)):
+        handler.setFormatter(fmt)
+        log.addHandler(handler)
+    return log
+
+# data directory
+DATA_DIR = "pipeline/data/2026-11-15_202422/"
 
 # initialize TransformerEncoder from config
 cfg = load_config()
@@ -13,13 +32,8 @@ L = t["num_layers"]
 LR = t["lr"]
 E = t["num_epochs"]
 B = t["batch_size"]
-N = cfg["dataset"]["train_val_shots"]
 
 encoder = nn.TransformerEncoder(nn.TransformerEncoderLayer(**encoder_params), num_layers=L)   # consider norm_first if training unstable
-
-# assume working dir is code/ and data is fixed under pipeline/data/{day}/train
-# get data in batches by round
-batches = {r: load_tokens("pipeline/data/2026-11-15_202422/", "train", r) for r in range(3, 101)}
 
 # Decoder is the attention pipeline e2e
 class Decoder(nn.Module):
@@ -36,36 +50,78 @@ class Decoder(nn.Module):
         x = self.encoder(self.embed(v))
         return self.head(x.mean(1)).squeeze(-1)
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model = Decoder().to(device)
-# use AdamW as default. maybe we change this idk its pretty standard
-opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=t["weight_decay"])
-if t["lr_scheduler"] == "cosine":
-    # arbitrarily choose 10*LR for maximum. could be changed
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=opt, T_max=N)
-else:
-    scheduler = torch.optim.lr_scheduler.LinearLR(optimizer=opt, end_factor=10)
-loss_fn = nn.BCEWithLogitsLoss()
+def get_elements(steps):
+    """Get the shit you need for training. Pass steps as param for setting scheduler config"""
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = Decoder().to(device)
+    # use AdamW as default. maybe we change this idk its pretty standard
+    opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=t["weight_decay"])
+    if t["lr_scheduler"] == "cosine":
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=opt, T_max=steps)
+    else:
+        # arbitrarily choose linear 10*LR max for default. could be changed
+        scheduler = torch.optim.lr_scheduler.LinearLR(optimizer=opt, end_factor=10, total_iters=steps)
+    loss_fn = nn.BCEWithLogitsLoss()
+
+    return device, model, opt, scheduler, loss_fn
 
 # define evaluate function to check progress during training. @torch.no_grad() blocks gradient computation to save memory since evaluate is an inference function
 @torch.no_grad()
-def evaluate(v, y):
+def evaluate(model: Decoder, v, y):
     model.eval()
-    return ((model(v) > 0) != y.bool()).float().mean() # LER
+    return ((model(v) > 0)!= y).float().mean() # LER. (model(v) > 0) converts logits to predictor values. equivalent to sigmoid(model(v)) > 0.5.
+
+def save_checkpoint(model: Decoder, opt, scheduler, path, step): 
+    torch.save({
+        "step": step,
+        "model": model.state_dict(),
+        "opt": opt.state_dict(),
+        "sched": scheduler.state_dict(),
+        "rng": torch.get_rng_state(),
+    }, path)
 
 # ======================= training loop ============================
 
-def run_training():
+def run_training() -> Dict[int, List[float]]:
+    start_time = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    save_path = WORK_DIR + start_time
+    Path(save_path).mkdir(parents=True, exist_ok=True)
+
+    t_cfg = json.dumps(t, indent=2, default=str)
+    log = setup_logger(save_path + "/train.log")
+    log.info("\n===\nTRAINING RUN: %s", start_time)
+    log.info("TRAINING CONFIG: \n%s", t_cfg)
+            
+    # global step counter
+    num_steps = 0
+
+    # load training data and unpack rounds in fixed batch sizes
+    # assume working dir is code/ and data is fixed under pipeline/data/{day}/train
+    batches = {r: load_tokens(DATA_DIR, "train", r) for r in range(3, 101)}
+    chunks = [(xs, ys) for X, y in batches.values() for xs, ys in zip(X.split(B), y.split(B))]
+    total_steps = E * len(chunks)
+    device, model, opt, scheduler, loss_fn = get_elements(total_steps)
+
+    # load eval data
+    lers = {}
+    eval_data = {}
+    eval_rounds = [3, 10, 30, 60, 100]
+    for r in eval_rounds:
+        lers[r] = []
+        Xv, yv = load_tokens(DATA_DIR, "val", r)
+        Xv, yv = Xv.to(device), yv.to(device)
+        eval_data[r] = (Xv, yv)
+
     # epoch outer loop
-    for _ in range(E):
-        # unpack rounds in fixed batch sizes and then shuffle the batches 
-        chunks = []
-        for X, y in batches.values():
-            chunks.append((xs, ys) for xs, ys in zip(torch.split(X, B), torch.split(y, B)))
-        # first inner loop over all round groups
-        for Xt, yt in chunks:
-            Xt = Xt.to(device)
-            yt = yt.to(device)
+    for epoch in range(E):
+        log.info("Beginning epoch %s", epoch)
+        # shuffle the chunks to randomize train order
+        random.shuffle(chunks)
+
+        # inner loop over all round groups
+        for i, (Xt, yt) in enumerate(chunks):
+            model.train()
+            Xt, yt = Xt.to(device), yt.to(device)
             loss = loss_fn(model(Xt), yt.float())
             opt.zero_grad()
             loss.backward()
@@ -74,6 +130,30 @@ def run_training():
             opt.step() # update weights
             scheduler.step() # update lr
 
+            # every 50 steps, run evaluate()
+            if i % 50 == 0:
+                log.info("entering eval at steps=%d | loss=%.4g", num_steps+i, loss.item())
+                for r in eval_rounds:
+                    log.info("evaluating at r=%d", r)
+                    Xv, yv = eval_data[r]
+                    ler = evaluate(model, Xv, yv)
+                    log.info("LER: %.4g", ler.item())
+                    if ler > 0.5:
+                        log.warning("High LER detected")
+                    lers[r].append(ler.item())
+        # save checkpoint at each epoch
+        num_steps += len(chunks)
+        log.info("saving checkpoint for epoch %d", epoch)
+        save_checkpoint(model, opt, scheduler, save_path + f"/e{epoch:02d}", num_steps)
+
+    model_path = save_path + "/model"
+    log.info("TRAINING FINISHED")
+    log.info("Saving model to %s\n", model_path)
+    torch.save({
+        "config": t_cfg,
+        "model": model.state_dict()
+    }, model_path)
+    return lers
             
 if __name__ == "__main__":
     run_training()
