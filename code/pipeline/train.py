@@ -148,7 +148,7 @@ def run_training():
                     log.info("r= %d, LER: %.4g, loss=%.4g", r, ler, loss_eval)
                     if ler > 0.5:
                         log.warning("High LER detected")
-                    lers[r].append(ler.item())
+                    lers[r].append(ler)
                     losses[r].append(loss_eval)
         # save checkpoint at each epoch
         num_steps += len(chunks)
