@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 import stim
 
-from config import DATA_DIR, DEFAULT_CONFIG_PATH, load_config
+from pipeline.config import DATA_DIR, DEFAULT_CONFIG_PATH, load_config
 
 SPLITS = ("train", "val", "test")
 SPLIT_IDS = {"train": 0, "val": 1, "test": 2}   # part of each (split, rounds) seed; never reorder
