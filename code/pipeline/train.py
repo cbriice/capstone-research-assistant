@@ -143,10 +143,9 @@ def run_training():
                 log.info("entering eval at steps=%d | loss=%.4g", num_steps+i, loss.item())
                 losses.append(loss.item())
                 for r in eval_rounds:
-                    log.info("evaluating at r=%d", r)
                     Xv, yv = eval_data[r]
                     ler = evaluate(model, Xv, yv)
-                    log.info("LER: %.4g", ler.item())
+                    log.info("r= %d, LER: %.4g", r, ler.item())
                     if ler > 0.5:
                         log.warning("High LER detected")
                     lers[r].append(ler.item())
