@@ -57,7 +57,7 @@ def test():
     ax.errorbar(range(3, 26), lers, yerr=se(lers, ns), capsize=3, label="Transformer")
     ax.errorbar(range(3, 26), mwpm_lers, yerr=se(mwpm_lers, ns), capsize=3, label="MWPM", color='r')
     ax.legend()
-    plt.title("Test: LERs for each round count 3-25 at p=1e-3 uniform stochastic pauli noise")
+    plt.title("Z memory LERs for each round count 3-25 at p=1e-3 uniform stochastic pauli noise")
     plt.xlabel("rounds")
     plt.ylabel("LER")
     path = Path("train_plots/2026-11-17_145514/test.png")
