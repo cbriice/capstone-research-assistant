@@ -1,0 +1,20 @@
+combination,order,features,seeds,params,minutes,val_ler,val_ler_min,val_ler_max,test_ler,test_se,test_ler_trained_r,test_ler_unseen_r
+position+time,mixed+curriculum,event x y t,3,25665,40.4,0.009419,0.008666,0.009801,0.034093,0.000203,0.009263,0.068855
+position+time+is_final,mixed+curriculum,event x y t is_final,3,25697,40.3,0.009892,0.008575,0.011782,0.026909,0.000179,0.009659,0.051059
+position+time+is_z+is_final,mixed+curriculum,event x y t is_z is_final,3,25729,40.6,0.011098,0.008204,0.016388,0.029685,0.000187,0.011054,0.055768
+position+is_final,mixed+curriculum,event x y is_final,3,25665,40.3,0.017328,0.017167,0.017411,0.040994,0.000216,0.017299,0.074168
+position+is_z+is_final,mixed+curriculum,event x y is_z is_final,3,25697,40.2,0.018595,0.017446,0.02053,0.042674,0.00022,0.018472,0.076558
+position+is_z,mixed+curriculum,event x y is_z,3,25665,40.2,0.020208,0.019061,0.021466,0.046408,0.000228,0.020074,0.083274
+position+time+is_z,mixed+curriculum,event x y t is_z,3,25697,40.4,0.027238,0.008375,0.063923,0.064155,0.000264,0.027244,0.115829
+position+time,mixed,event x y t,3,25665,96.8,0.043531,0.009065,0.068544,0.079809,0.000285,0.04329,0.130935
+position+time,unmixed+curriculum,event x y t,3,25665,75,0.047826,0.045411,0.050815,0.112069,0.000326,0.047572,0.202365
+position+time,unmixed,event x y t,3,25665,44.2,0.052985,0.045149,0.06816,0.109056,0.000322,0.052661,0.18801
+position,mixed+curriculum,event x y,3,25633,40.4,0.061302,0.028339,0.078862,0.111947,0.000327,0.061285,0.182873
+time+is_z+is_final,mixed+curriculum,event t is_z is_final,3,25665,40.3,0.089289,0.08891,0.089736,0.130739,0.000341,0.089062,0.189087
+is_z+is_final,mixed+curriculum,event is_z is_final,3,25633,40.3,0.0893,0.089112,0.089582,0.130839,0.000342,0.089051,0.189342
+is_z,mixed+curriculum,event is_z,3,25601,40.3,0.089532,0.089383,0.089752,0.131158,0.000342,0.089163,0.18995
+time+is_z,mixed+curriculum,event t is_z,3,25633,40.4,0.089615,0.089377,0.089752,0.133022,0.000344,0.089274,0.19427
+time+is_final,mixed+curriculum,event t is_final,3,25633,40.7,0.089723,0.0897,0.089737,0.131135,0.000342,0.089267,0.189751
+is_final,mixed+curriculum,event is_final,3,25601,41.2,0.089749,0.089744,0.089752,0.131121,0.000342,0.089273,0.189708
+event_only,mixed+curriculum,event,3,25569,42.5,0.089752,0.089752,0.089752,0.131109,0.000342,0.089253,0.189708
+time,mixed+curriculum,event t,3,25601,40.6,0.089752,0.089752,0.089752,0.131109,0.000342,0.089253,0.189708

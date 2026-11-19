@@ -1,0 +1,9 @@
+# Package versions this code base was tested with (Python 3.13). Install: pip install -r requirements.txt
+# For an NVIDIA GPU, install torch from https://pytorch.org/get-started/locally/ (pick your CUDA version) first.
+# generate_data.py saves the versions it ran with in data/<run>/manifest.json.
+stim==1.16.0
+pymatching==2.4.0
+numpy==2.5.3
+torch==2.15.0
+matplotlib==3.11.2
+psutil==7.2.2          # optional: peak-RAM numbers in train.log on Windows

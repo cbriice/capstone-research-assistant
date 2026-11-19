@@ -1,0 +1,433 @@
+{
+ "feature_groups": {
+  "position": [
+   "x",
+   "y"
+  ],
+  "time": [
+   "t"
+  ],
+  "is_z": [
+   "is_z"
+  ],
+  "is_final": [
+   "is_final"
+  ]
+ },
+ "combinations": [
+  "position+time+is_z+is_final",
+  "position+time+is_z",
+  "position+time+is_final",
+  "position+time",
+  "position+is_z+is_final",
+  "position+is_z",
+  "position+is_final",
+  "position",
+  "time+is_z+is_final",
+  "time+is_z",
+  "time+is_final",
+  "time",
+  "is_z+is_final",
+  "is_z",
+  "is_final",
+  "event_only"
+ ],
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "orders": [
+  "mixed+curriculum",
+  "unmixed+curriculum",
+  "mixed",
+  "unmixed"
+ ],
+ "base_order": "mixed+curriculum",
+ "baselines": {
+  "val": {
+   "3": {
+    "shots": 217392,
+    "always0": 4902,
+    "mwpm": 156
+   },
+   "4": {
+    "shots": 163044,
+    "always0": 4659,
+    "mwpm": 159
+   },
+   "5": {
+    "shots": 111941,
+    "always0": 3832,
+    "mwpm": 129
+   },
+   "6": {
+    "shots": 108696,
+    "always0": 4338,
+    "mwpm": 145
+   },
+   "7": {
+    "shots": 92025,
+    "always0": 4005,
+    "mwpm": 151
+   },
+   "8": {
+    "shots": 75758,
+    "always0": 3670,
+    "mwpm": 131
+   },
+   "9": {
+    "shots": 70094,
+    "always0": 3749,
+    "mwpm": 149
+   },
+   "10": {
+    "shots": 58594,
+    "always0": 3530,
+    "mwpm": 139
+   },
+   "11": {
+    "shots": 58366,
+    "always0": 3743,
+    "mwpm": 159
+   },
+   "12": {
+    "shots": 47469,
+    "always0": 3289,
+    "mwpm": 142
+   },
+   "13": {
+    "shots": 44379,
+    "always0": 3281,
+    "mwpm": 141
+   },
+   "14": {
+    "shots": 45181,
+    "always0": 3618,
+    "mwpm": 130
+   },
+   "15": {
+    "shots": 39894,
+    "always0": 3352,
+    "mwpm": 141
+   },
+   "16": {
+    "shots": 39788,
+    "always0": 3527,
+    "mwpm": 150
+   },
+   "17": {
+    "shots": 38168,
+    "always0": 3453,
+    "mwpm": 149
+   },
+   "18": {
+    "shots": 33334,
+    "always0": 3332,
+    "mwpm": 163
+   },
+   "19": {
+    "shots": 33483,
+    "always0": 3532,
+    "mwpm": 133
+   },
+   "20": {
+    "shots": 31848,
+    "always0": 3420,
+    "mwpm": 133
+   },
+   "21": {
+    "shots": 31121,
+    "always0": 3505,
+    "mwpm": 140
+   },
+   "22": {
+    "shots": 29240,
+    "always0": 3470,
+    "mwpm": 133
+   },
+   "23": {
+    "shots": 30182,
+    "always0": 3646,
+    "mwpm": 157
+   },
+   "24": {
+    "shots": 25000,
+    "always0": 3189,
+    "mwpm": 163
+   },
+   "25": {
+    "shots": 25997,
+    "always0": 3321,
+    "mwpm": 159
+   },
+   "26": {
+    "shots": 23007,
+    "always0": 3009,
+    "mwpm": 155
+   },
+   "27": {
+    "shots": 22027,
+    "always0": 3058,
+    "mwpm": 166
+   },
+   "28": {
+    "shots": 21677,
+    "always0": 3096,
+    "mwpm": 143
+   },
+   "29": {
+    "shots": 21217,
+    "always0": 3111,
+    "mwpm": 133
+   },
+   "30": {
+    "shots": 21521,
+    "always0": 3276,
+    "mwpm": 145
+   }
+  },
+  "test": {
+   "3": {
+    "shots": 217392,
+    "always0": 4941,
+    "mwpm": 144
+   },
+   "4": {
+    "shots": 163044,
+    "always0": 4641,
+    "mwpm": 154
+   },
+   "5": {
+    "shots": 111941,
+    "always0": 3862,
+    "mwpm": 120
+   },
+   "6": {
+    "shots": 108696,
+    "always0": 4197,
+    "mwpm": 137
+   },
+   "7": {
+    "shots": 92025,
+    "always0": 4047,
+    "mwpm": 143
+   },
+   "8": {
+    "shots": 75758,
+    "always0": 3649,
+    "mwpm": 155
+   },
+   "9": {
+    "shots": 70094,
+    "always0": 3779,
+    "mwpm": 151
+   },
+   "10": {
+    "shots": 58594,
+    "always0": 3452,
+    "mwpm": 148
+   },
+   "11": {
+    "shots": 58366,
+    "always0": 3877,
+    "mwpm": 163
+   },
+   "12": {
+    "shots": 47469,
+    "always0": 3349,
+    "mwpm": 129
+   },
+   "13": {
+    "shots": 44379,
+    "always0": 3248,
+    "mwpm": 138
+   },
+   "14": {
+    "shots": 45181,
+    "always0": 3525,
+    "mwpm": 140
+   },
+   "15": {
+    "shots": 39894,
+    "always0": 3351,
+    "mwpm": 147
+   },
+   "16": {
+    "shots": 39788,
+    "always0": 3502,
+    "mwpm": 174
+   },
+   "17": {
+    "shots": 38168,
+    "always0": 3632,
+    "mwpm": 162
+   },
+   "18": {
+    "shots": 33334,
+    "always0": 3265,
+    "mwpm": 165
+   },
+   "19": {
+    "shots": 33483,
+    "always0": 3400,
+    "mwpm": 126
+   },
+   "20": {
+    "shots": 31848,
+    "always0": 3443,
+    "mwpm": 139
+   },
+   "21": {
+    "shots": 31121,
+    "always0": 3487,
+    "mwpm": 144
+   },
+   "22": {
+    "shots": 29240,
+    "always0": 3394,
+    "mwpm": 159
+   },
+   "23": {
+    "shots": 30182,
+    "always0": 3628,
+    "mwpm": 136
+   },
+   "24": {
+    "shots": 25000,
+    "always0": 3020,
+    "mwpm": 152
+   },
+   "25": {
+    "shots": 25997,
+    "always0": 3316,
+    "mwpm": 141
+   },
+   "26": {
+    "shots": 23007,
+    "always0": 2986,
+    "mwpm": 158
+   },
+   "27": {
+    "shots": 22027,
+    "always0": 3054,
+    "mwpm": 139
+   },
+   "28": {
+    "shots": 21677,
+    "always0": 3107,
+    "mwpm": 150
+   },
+   "29": {
+    "shots": 21217,
+    "always0": 3052,
+    "mwpm": 132
+   },
+   "30": {
+    "shots": 21521,
+    "always0": 3326,
+    "mwpm": 150
+   },
+   "31": {
+    "shots": 20690,
+    "always0": 3241,
+    "mwpm": 164
+   },
+   "32": {
+    "shots": 19281,
+    "always0": 3058,
+    "mwpm": 146
+   },
+   "33": {
+    "shots": 21866,
+    "always0": 3542,
+    "mwpm": 176
+   },
+   "34": {
+    "shots": 18868,
+    "always0": 3144,
+    "mwpm": 147
+   },
+   "35": {
+    "shots": 18588,
+    "always0": 3082,
+    "mwpm": 139
+   },
+   "36": {
+    "shots": 17163,
+    "always0": 3033,
+    "mwpm": 159
+   },
+   "37": {
+    "shots": 17710,
+    "always0": 3210,
+    "mwpm": 164
+   },
+   "38": {
+    "shots": 16484,
+    "always0": 2947,
+    "mwpm": 141
+   },
+   "39": {
+    "shots": 16502,
+    "always0": 3109,
+    "mwpm": 127
+   },
+   "40": {
+    "shots": 15577,
+    "always0": 2891,
+    "mwpm": 135
+   },
+   "41": {
+    "shots": 15244,
+    "always0": 2923,
+    "mwpm": 146
+   },
+   "42": {
+    "shots": 14764,
+    "always0": 2807,
+    "mwpm": 138
+   },
+   "43": {
+    "shots": 14549,
+    "always0": 2892,
+    "mwpm": 135
+   },
+   "44": {
+    "shots": 14313,
+    "always0": 2894,
+    "mwpm": 134
+   },
+   "45": {
+    "shots": 13538,
+    "always0": 2824,
+    "mwpm": 150
+   },
+   "46": {
+    "shots": 13478,
+    "always0": 2818,
+    "mwpm": 146
+   },
+   "47": {
+    "shots": 13147,
+    "always0": 2834,
+    "mwpm": 166
+   },
+   "48": {
+    "shots": 13393,
+    "always0": 2874,
+    "mwpm": 137
+   },
+   "49": {
+    "shots": 12865,
+    "always0": 2907,
+    "mwpm": 144
+   },
+   "50": {
+    "shots": 12616,
+    "always0": 2739,
+    "mwpm": 144
+   }
+  }
+ }
+}
