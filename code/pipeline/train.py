@@ -162,7 +162,7 @@ def run_training():
             scheduler.step() # update lr
 
             # every 100 steps, run evaluate()
-            step_inc = 100 if cfg["dataset"]["train_val_shots"] <= 10e6 else 1000
+            step_inc = 100 if cfg["dataset"]["train_val_shots"] <= 1e6 else 1000
             if i % step_inc == 0:
                 log.info("entering eval at steps=%d", num_steps+i)
                 for r in eval_rounds:
