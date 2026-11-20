@@ -48,15 +48,11 @@ CONFIG: dict = {
 
 """
 Parameter Optimization Notes: (in progress) 
-
 * Testing embedding dimensions: d ∈ {8, 16, 32} (keep all other params fixed). 
-
 - if  d = 8 performs almost as well as d =16, d = 8 becomes an FPGA candidate. 
-
 - d= 32 improves accuracy significantly, we must determine whether that improvement is worth the hardware expense. 
 
 Selection rule: Keep the smallest embedding dimension that meet our accuracy criteria
-
 
 * Testing Feed Forward dimensions: dim_feedforward ∈ {16, 32, 64} (keep all other params fixed).
 - The FFN increases computation work linearly with width. If dim_feedforward = 16 performs almost as well as dim_feedforward = 32, we can use the smaller value to save computation.
@@ -71,19 +67,8 @@ FFN width            FFN MAC                Encoder MAC
 
 Selection rule: Keep the smallest FFN width that meets our accuracy criteria
 
-
 *Gelu vs ReLU: Gelu is more expensive than ReLU, but it is more expressive. If Gelu performs significantly better than ReLU, we will use Gelu. Otherwise, we will use ReLU to save computation.
 
-
-
-
-"""
-
-
-
-
-
-"""
 CONFIG NOTES: 
 z = w^Tg + b, g = 1/N * sum(LN(e_L)); z is per-basis. 
 - training trials start with 1 head memory Z for simplicity. in practice we have >=2 heads, one for memory X and one for memory Z. 
