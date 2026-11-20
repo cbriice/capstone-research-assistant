@@ -3,7 +3,8 @@ hand written and maintained training script. i dont fw argparse so these are the
 - training data directory :29
 - rounds to validate on   :132
 - training data stats     :114
-- eval step increments    :165
+- eval step increments    :165  
+PREFERRED: run with python3 -m claude.plot_training, otherwise analysis is difficult
 """
 import torch, torch.nn as nn
 from pipeline.config import load_config
@@ -12,7 +13,6 @@ import json, logging, random, time
 from datetime import datetime
 from pathlib import Path
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
-import numpy as np
 
 # each training run gets its own folder under WORK_DIR: checkpoints, final model, train.log
 WORK_DIR = "pipeline/data/train/"
@@ -80,7 +80,6 @@ def get_elements(steps):
 # define evaluate function to check progress during training. @torch.no_grad() blocks gradient computation to save memory since evaluate is an inference function
 @torch.no_grad()
 def evaluate(model: Decoder, loss_fn, v, y, log):
-    log.info("EVAL: cuda max memory allocated (GB): %f", torch.cuda.max_memory_allocated() / 1e9)
     model.eval()
     # loading all shots into memory causes OOM in large shot cases. fix: chunk validation tensor into batches of 10e3 and concatenate. 
     # after each chunk in the for loop runs, the memory is freed. torch.Tensor.split() is a view, no data copied into memory
@@ -99,6 +98,7 @@ def save_checkpoint(model: Decoder, opt, scheduler, path, step):
         "opt": opt.state_dict(),
         "sched": scheduler.state_dict(),
         "rng": torch.get_rng_state(),
+        "config": json.dumps(t, indent=2, default=str),
     }, path)
 
 # ======================= training loop ============================
@@ -162,7 +162,8 @@ def run_training():
             scheduler.step() # update lr
 
             # every 100 steps, run evaluate()
-            if i % 100 == 0:
+            step_inc = 100 if cfg["dataset"]["train_val_shots"] <= 10e6 else 1000
+            if i % step_inc == 0:
                 log.info("entering eval at steps=%d", num_steps+i)
                 for r in eval_rounds:
                     Xv, yv = eval_data[r]
@@ -176,7 +177,7 @@ def run_training():
         num_steps += len(chunks)
         log.info("saving checkpoint for epoch %d", epoch+1)
         # don't need to save checkpoint for last epoch
-        if epoch != 4: save_checkpoint(model, opt, scheduler, save_path + f"/e{epoch:02d}", num_steps)
+        if epoch != E - 1: save_checkpoint(model, opt, scheduler, save_path + f"/e{epoch:02d}", num_steps)
 
     model_path = save_path + "/model"
     end = time.time()
