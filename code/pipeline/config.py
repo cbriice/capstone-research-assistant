@@ -10,7 +10,8 @@ DATA_DIR = PIPELINE_DIR / "data"
 
 # ==================================== CONFIG ===============================================
 # some params are related. declare them here so that they can be used in computations to preserve ratios
-TRAIN_VAL_SHOTS = 1000000
+# tried so far: 10^6 across the board including all analysis in feature_examination/. for rounds 3-10: try bumping to 10^7
+TRAIN_VAL_SHOTS = 10000000
 
 CONFIG: dict = {
   "seed": 1234,
@@ -19,7 +20,7 @@ CONFIG: dict = {
     "basis": "z",
     "p": 0.001
   },
-  "rounds": [3, 25],              # [min, max], inclusive; equal shots per r in every split (AQ1 pretraining used 1..25)
+  "rounds": [3, 10],              # [min, max], inclusive; equal shots per r in every split (AQ1 pretraining used 1..25)
   "dataset": {
     "train_val_shots": TRAIN_VAL_SHOTS,
     "val_fraction": 0.1,
@@ -28,9 +29,9 @@ CONFIG: dict = {
   },
   "training": {
     "encoder": {                   # nn.TransformerEncoderLayer(**encoder); head size is fixed at d_model / nhead
-      "d_model": 16,
-      "nhead": 1,
-      "dim_feedforward": 32,
+      "d_model": 32,
+      "nhead": 2,
+      "dim_feedforward": 128,
       "dropout": 0.05,
       "activation": "gelu",        # relu | gelu
       "batch_first": True,         # tokens are (shots, detectors, features). torch should not auto batch our data
@@ -38,7 +39,7 @@ CONFIG: dict = {
     "num_layers": 2,               # nn.TransformerEncoder(layer, num_layers)
     "batch_size": 1000,
     "warmup_ratio": 0.1,
-    "lr_scheduler": "linear",
+    "lr_scheduler": "cosine",
     "num_epochs": 5,              
     "lr": 5e-4,
     "weight_decay": 0.01,           # L2 regularization term for AdamW applied to each theta directly 

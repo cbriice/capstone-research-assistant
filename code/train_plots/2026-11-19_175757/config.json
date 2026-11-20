@@ -1,0 +1,35 @@
+{
+  "seed": 1234,
+  "circuit": {
+    "distance": 3,
+    "basis": "z",
+    "p": 0.001
+  },
+  "rounds": [
+    3,
+    10
+  ],
+  "dataset": {
+    "train_val_shots": 1000000,
+    "val_fraction": 0.1,
+    "test_shots": 200000,
+    "train_empty_keep_fraction": 0.333
+  },
+  "training": {
+    "encoder": {
+      "d_model": 32,
+      "nhead": 2,
+      "dim_feedforward": 128,
+      "dropout": 0.05,
+      "activation": "gelu",
+      "batch_first": true
+    },
+    "num_layers": 2,
+    "batch_size": 1000,
+    "warmup_ratio": 0.1,
+    "lr_scheduler": "cosine",
+    "num_epochs": 5,
+    "lr": 0.0005,
+    "weight_decay": 0.01
+  }
+}

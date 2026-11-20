@@ -1,3 +1,10 @@
+"""
+hand written and maintained training script. i dont fw argparse so these are the following hardcoded info:
+- training data directory :29
+- rounds to validate on   :132
+- training data stats     :114
+- eval step increments    :165
+"""
 import torch, torch.nn as nn
 from pipeline.config import load_config
 from pipeline.stim_preprocessing import load_tokens
@@ -21,7 +28,7 @@ def setup_logger(log_path: str) -> logging.Logger:
     return log
 
 # data directory
-DATA_DIR = "pipeline/data/2026-11-17_144943/"
+DATA_DIR = "pipeline/data/2026-11-19_180037/"
 
 # initialize TransformerEncoder from config
 cfg = load_config()
@@ -73,8 +80,11 @@ def get_elements(steps):
 # define evaluate function to check progress during training. @torch.no_grad() blocks gradient computation to save memory since evaluate is an inference function
 @torch.no_grad()
 def evaluate(model: Decoder, loss_fn, v, y, log):
+    log.info("EVAL: cuda max memory allocated (GB): %f", torch.cuda.max_memory_allocated() / 1e9)
     model.eval()
-    logits = model(v)
+    # loading all shots into memory causes OOM in large shot cases. fix: chunk validation tensor into batches of 10e3 and concatenate. 
+    # after each chunk in the for loop runs, the memory is freed. torch.Tensor.split() is a view, no data copied into memory
+    logits = torch.cat([model(xb) for xb in v.split(10000)])
     predictors = (logits > 0).float()           # (model(v) > 0) converts logits to predictor values. equivalent to sigmoid(model(v)) > 0.5.
     ler = (predictors != y).float().mean()    
     loss = loss_fn(logits, y.float())           # hand-calculate loss here to track per fixed round
@@ -103,6 +113,13 @@ def run_training():
     log = setup_logger(save_path + "/train.log")
     log.info("\n===\nTRAINING RUN: %s", start_time)
     log.info("TRAINING CONFIG: \n%s", t_cfg)
+    # adding this just so i can remember data distribution from logs. if model has LER >4% then predicting all zeros is more accurate.
+    # we might need more epochs to train it not to just predict only zeros
+    log.info("training data from %s", DATA_DIR)
+    log.info("DATA STATISTICS: %s", 
+             """train:  9,000,000 shots over 8 round counts | empty  45.4% | label = 1  7.63%
+                val:  1,000,000 shots over 8 round counts | empty  70.5% | label = 1  4.13%
+                test:  2,000,000 shots over 8 round counts | empty  70.5% | label = 1  4.14%""")
             
     # global step counter
     num_steps = 0
@@ -118,7 +135,7 @@ def run_training():
     lers = {}
     losses = {}
     eval_data = {}
-    eval_rounds = [3, 10, 15, 25]
+    eval_rounds = [3, 5, 7, 10]
     for r in eval_rounds:
         lers[r] = []
         losses[r] = []
