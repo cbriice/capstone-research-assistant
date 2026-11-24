@@ -28,7 +28,7 @@ def setup_logger(log_path: str) -> logging.Logger:
     return log
 
 # data directory
-DATA_DIR = "pipeline/data/2026-11-19_180037/"
+DATA_DIR = "pipeline/data/2026-11-17_135223/"
 
 # initialize TransformerEncoder from config
 cfg = load_config()
@@ -56,10 +56,19 @@ class Decoder(nn.Module):
         x = self.encoder(self.embed(v))
         return self.head(x.mean(1)).squeeze(-1)
 
+
+def set_model_config(model_cfg):
+    global encoder, encoder_params, L
+    
+    encoder_params = model_cfg["encoder"]
+    L = model_cfg["num_layers"]
+    
+    encoder = nn.TransformerEncoder(nn.TransformerEncoderLayer(**encoder_params), num_layers=L)
+
 def get_elements(steps):
     """Get the shit you need for training. Pass steps as param for setting scheduler config"""
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = Decoder().to(device)
+    model = Decoder(d=encoder_params["d_model"]).to(device) #changed from model = Decoder().to(device)
     # use AdamW as default. maybe we change this idk its pretty standard
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=t["weight_decay"])
     # warmup + either cosine or linear depending on config. linear default is arbitrary choice
@@ -103,13 +112,27 @@ def save_checkpoint(model: Decoder, opt, scheduler, path, step):
 
 # ======================= training loop ============================
 
-def run_training():
+def run_training(model_cfg=None, run_name=None): #changed from def run_training(model_cfg=None):
+    if model_cfg is not None:
+        set_model_config(model_cfg)
     start = time.time()
     start_time = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    save_path = WORK_DIR + start_time
-    Path(save_path).mkdir(parents=True, exist_ok=True)
+    # Give each experiment a unique folder
+    if run_name is not None:
+        folder_name = f"{start_time}_{run_name}"
+    else:
+        folder_name = start_time
 
-    t_cfg = json.dumps(t, indent=2, default=str)
+    save_path = str(Path(WORK_DIR) / folder_name) #changed from save_path = WORK_DIR + start_time 
+    Path(save_path).mkdir(parents=True, exist_ok=False) #changed exist_ok=True to exist_ok=False
+
+    current_training_cfg = dict(t) # added
+
+    if model_cfg is not None:
+        current_training_cfg["encoder"] = model_cfg["encoder"] #added
+        current_training_cfg["num_layers"] = model_cfg["num_layers"] #added
+
+    t_cfg = json.dumps(current_training_cfg, indent=2, default=str) #changed from t_cfg = json.dumps(t, indent=2, default=str)
     log = setup_logger(save_path + "/train.log")
     log.info("\n===\nTRAINING RUN: %s", start_time)
     log.info("TRAINING CONFIG: \n%s", t_cfg)
@@ -188,7 +211,12 @@ def run_training():
         "model": model.state_dict()
     }, model_path)
     # return data for analysis
-    return lers, losses, total_steps
+    num_params = sum(p.numel() for p in model.parameters())
+    return {
+    "parameters": num_params,
+    "lers": {r: lers[r][-1] for r in eval_rounds},
+    "losses": {r: losses[r][-1] for r in eval_rounds},
+    } #changed from return lers, losses, total_steps
             
 if __name__ == "__main__":
     run_training()
